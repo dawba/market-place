@@ -16,4 +16,4 @@ Created with *tbd*
 
 # Creators
 Contributed by
-Dawid Bania & Konrad Wójcik
+Dawid Bania & Konrad Wójcik, Jagiellonian University
