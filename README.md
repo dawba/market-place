@@ -13,3 +13,7 @@ Market Place is a project developed for Java in Production Applications course, 
 
 # Techstack
 Created with *tbd*
+
+# Creators
+Contributed by
+Dawid Bania & Konrad Wójcik
