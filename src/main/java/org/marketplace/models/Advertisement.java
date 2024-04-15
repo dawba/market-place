@@ -3,7 +3,7 @@ package org.marketplace.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
-import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 @Entity
 public class Advertisement {
@@ -20,8 +20,8 @@ public class Advertisement {
     private List<AdvertisementImage> images;
     private double price;
     private String location;
-    private Clock createdAt;
-    private Clock updatedAt;
+    private LocalDateTime created_at;
+    private LocalDateTime updated_at;
     private int status; //if status>0 it is id of buyer, else if status <=0: 0-ACTIVE, -1-INACTIVE, -2-DELETED, -3-EDITED
 
     public Advertisement(Long advertisementId, String title, String description, Category category, List<AdvertisementImage> images, double price, String location) {
@@ -32,8 +32,6 @@ public class Advertisement {
         this.images = images;
         this.price = price;
         this.location = location;
-        //this.createdAt =
-        //this.updatedAt =
         this.status = 0;
     }
 
@@ -81,13 +79,12 @@ public class Advertisement {
         this.location = location;
     }
 
-    public Clock getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreated_at() {
+        return created_at;
     }
 
-
-    public Clock getUpdatedAt() {
-        return updatedAt;
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
     }
 
     public int getStatus() {
