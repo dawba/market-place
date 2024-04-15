@@ -6,11 +6,24 @@ import jakarta.persistence.*;
 public class AdvertisementImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private final Long id;
 
-    private String filename; // lub ścieżka do pliku
-
+    private final String filename;
     @ManyToOne
     @JoinColumn(name = "advertisementId")
-    private Advertisement advertisement;
+    private final Advertisement advertisement;
+
+    public AdvertisementImage(Long id, String filename, Advertisement advertisement) {
+        this.id = id;
+        this.filename = filename;
+        this.advertisement = advertisement;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public Advertisement getAdvertisement() {
+        return advertisement;
+    }
 }
