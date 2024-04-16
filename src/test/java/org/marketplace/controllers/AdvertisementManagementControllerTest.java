@@ -44,7 +44,7 @@ public class AdvertisementManagementControllerTest {
                         .contentType(APPLICATION_JSON).content(payload)
                 )
                 .andExpect(status().isBadRequest()).andExpect(content().string(
-                        "{\"status\":\"BAD_REQUEST\",\"message\":\"Ads failed to be processed\",\"details\":\"Not implemented yet.\"}"
+                        "{\"status\":\"BAD_REQUEST\",\"message\":\"Ads failed to be processed\",\"details\":\"Not implemented yet.\",\"path\":\"uri=/advertisements;client=127.0.0.1\"}"
                 ));
     }
 }

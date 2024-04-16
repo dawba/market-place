@@ -6,11 +6,13 @@ public class ErrorResponse {
     private HttpStatus status;
     private String message;
     private String details;
+    private String path;
 
-    public ErrorResponse(HttpStatus status, String message, String details) {
+    public ErrorResponse(HttpStatus status, String message, String details, String path) {
         this.status = status;
         this.message = message;
         this.details = details;
+        this.path = path;
     }
 
     public void setStatus(HttpStatus status) {
@@ -35,5 +37,9 @@ public class ErrorResponse {
 
     public String getDetails() {
         return details;
+    }
+
+    public String getPath() {
+        return path;
     }
 }
