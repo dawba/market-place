@@ -20,6 +20,10 @@ public class Category {
         this.advertisements = advertisements;
     }
 
+    public Category() {
+
+    }
+
     public Long getCategoryId() {
         return categoryId;
     }

@@ -19,6 +19,12 @@ public class AdvertisementImage {
         this.advertisement = advertisement;
     }
 
+    public AdvertisementImage() {
+        this.id = null;
+        this.filename = null;
+        this.advertisement = null;
+    }
+
     public String getFilename() {
         return filename;
     }
