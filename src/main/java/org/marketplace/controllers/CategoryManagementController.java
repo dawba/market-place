@@ -1,23 +1,25 @@
 package org.marketplace.controllers;
 
+import org.marketplace.models.Advertisement;
 import org.marketplace.models.Category;
 import org.marketplace.services.CategoryManagementService;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
 @RequestMapping("/categories")
 public class CategoryManagementController {
     private final CategoryManagementService categoryManagementService;
 
-    public CategoryManagementController(CategoryManagementService categoryManagementService){
+    public CategoryManagementController(CategoryManagementService categoryManagementService) {
         this.categoryManagementService = categoryManagementService;
     }
 
-    @PostMapping
-    public Category requestAddCategory(@RequestBody Category category){
-        return this.categoryManagementService.addCategory(category);
+    @PostMapping("/add")
+    public Category requestAddCategory(@RequestBody Category category) {
+        return categoryManagementService.addCategory(category);
     }
+
 }

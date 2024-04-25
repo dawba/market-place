@@ -3,12 +3,11 @@ package org.marketplace.controllers;
 import org.marketplace.models.User;
 import org.marketplace.services.UserManagementService;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
 @RequestMapping("/user")
 public class UserManagementController {
     private final UserManagementService userManagementService;
@@ -18,16 +17,15 @@ public class UserManagementController {
     }
 
 
-    @PostMapping
+    @PostMapping("/add")
     public User requestAddUser(@RequestBody User user) {
-        return userManagementService.addUser(user);
+        return userManagementService.registerNewUserAccount(user);
     }
 
-    @GetMapping("/test")
-    public User getUser()
+    @GetMapping("/all")
+    public List<User> getUsers()
     {
-        System.out.println("Testing getMapping User Controller");
-        return new User();
+        return userManagementService.getUsers();
     }
 
 }
