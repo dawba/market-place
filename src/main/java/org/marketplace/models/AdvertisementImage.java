@@ -6,30 +6,46 @@ import jakarta.persistence.*;
 public class AdvertisementImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private final Long id;
+    @Column(name = "advertisementImageId")
+    private Long id;
 
-    private final String filename;
+    private String filename;
     @ManyToOne
     @JoinColumn(name = "advertisementId")
-    private final Advertisement advertisement;
+    private Advertisement advertisement;
 
     public AdvertisementImage(Long id, String filename, Advertisement advertisement) {
         this.id = id;
         this.filename = filename;
-        this.advertisement = advertisement;
+        this.advertisement=advertisement;
     }
 
     public AdvertisementImage() {
-        this.id = null;
-        this.filename = null;
-        this.advertisement = null;
+
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFilename() {
         return filename;
     }
 
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
     public Advertisement getAdvertisement() {
         return advertisement;
     }
+
+    public void setAdvertisement(Advertisement advertisement) {
+        this.advertisement = advertisement;
+    }
+
 }

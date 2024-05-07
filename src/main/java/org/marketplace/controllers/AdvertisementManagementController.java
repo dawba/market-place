@@ -2,23 +2,21 @@ package org.marketplace.controllers;
 
 
 import org.marketplace.models.Advertisement;
+import org.marketplace.models.Category;
 import org.marketplace.services.AdvertisementManagementService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.marketplace.services.CategoryManagementService;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/advertisements")
+@RequestMapping("/advertisement")
 public class AdvertisementManagementController {
     private final AdvertisementManagementService advertisementManagementService;
-
-    public AdvertisementManagementController(AdvertisementManagementService advertisementManagementService){
+    public AdvertisementManagementController(AdvertisementManagementService advertisementManagementService) {
         this.advertisementManagementService = advertisementManagementService;
     }
 
-    @PostMapping
-    public Advertisement requestAddOffer(@RequestBody Advertisement advertisement){
+    @PostMapping("/add")
+    public Advertisement requestAddOffer(@RequestBody Advertisement advertisement) {
         return advertisementManagementService.addAdvertisement(advertisement);
     }
 }
