@@ -1,5 +1,6 @@
 package org.marketplace.services;
 
+import org.marketplace.errors.AdsManagementException;
 import org.marketplace.models.Advertisement;
 import org.springframework.stereotype.Service;
 
@@ -7,6 +8,6 @@ import org.springframework.stereotype.Service;
 public class AdvertisementManagementService {
     public Advertisement addAdvertisement(Advertisement advertisement){
         //TODO
-        throw new RuntimeException("Not implemented yet.");
+        throw new AdsManagementException("Not implemented yet.");
     }
 }
