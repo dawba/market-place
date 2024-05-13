@@ -1,5 +1,8 @@
 package org.marketplace.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import org.marketplace.models.Advertisement;
 import org.marketplace.models.Category;
@@ -10,8 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/advertisement")
+@RequestMapping("/api/advertisement")
 public class AdvertisementManagementController {
+
     private final AdvertisementManagementService advertisementManagementService;
     public AdvertisementManagementController(AdvertisementManagementService advertisementManagementService) {
         this.advertisementManagementService = advertisementManagementService;
@@ -22,32 +26,32 @@ public class AdvertisementManagementController {
         return advertisementManagementService.addAdvertisement(advertisement);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public void requestDeleteAdvertisement(@PathVariable Long id) {
         advertisementManagementService.deleteAdvertisement(id);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public Advertisement requestUpdateAdvertisement(@RequestBody Advertisement advertisement) {
         return advertisementManagementService.updateAdvertisement(advertisement);
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/{id}")
     public Advertisement requestGetAdvertisement(@PathVariable Long id) {
         return advertisementManagementService.getAdvertisementById(id);
     }
 
-    @GetMapping("get/all")
+    @GetMapping("/all")
     public List<Advertisement> requestGetAllAdvertisements() {
         return advertisementManagementService.getAllAdvertisements();
     }
 
-    @GetMapping("get/category/{id}")
+    @GetMapping("/category/{id}")
     public List<Advertisement> requestGetAdvertisementsByCategory(@PathVariable Long id) {
         return advertisementManagementService.getAdvertisementsByCategory(id);
     }
 
-    @GetMapping("get/user/{id}")
+    @GetMapping("/user/{id}")
     public List<Advertisement> requestGetAdvertisementsByUser(@PathVariable Long id) {
         return advertisementManagementService.getAdvertisementsByUser(id);
     }
