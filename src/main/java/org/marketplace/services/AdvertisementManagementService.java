@@ -2,8 +2,11 @@ package org.marketplace.services;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import org.marketplace.controllers.AdvertisementManagementController;
 import org.marketplace.models.Advertisement;
 import org.marketplace.repositories.AdvertisementManagementRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,12 +15,21 @@ import java.util.Optional;
 @Service
 public class AdvertisementManagementService {
     private final AdvertisementManagementRepository advertisementManagementRepository;
+    private static final Logger logger = LoggerFactory.getLogger(AdvertisementManagementService.class);
 
     public AdvertisementManagementService(AdvertisementManagementRepository advertisementManagementRepository) {
         this.advertisementManagementRepository = advertisementManagementRepository;
     }
 
     public Advertisement addAdvertisement(Advertisement advertisement) {
+        logger.info("Adding new advertisement serv");
+
+
+        if(advertisement.getId() == null) {
+            logger.info("Advertisement cannot be null");
+            throw new IllegalArgumentException("Advertisement cannot be null");
+        }
+
         try {
             getAdvertisementById(advertisement.getId());
             throw new EntityExistsException(String.format("Advertisement with id: %d already exsits!", advertisement.getId()));
