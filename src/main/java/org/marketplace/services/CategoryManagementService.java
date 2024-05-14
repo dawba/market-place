@@ -1,12 +1,10 @@
 package org.marketplace.services;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.marketplace.models.Advertisement;
 import org.marketplace.models.Category;
 import org.marketplace.repositories.CategoryManagementRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -37,7 +35,7 @@ public class CategoryManagementService {
     }
 
     public void deleteCategory(Long id) {
-        if(!categoryManagementRepository.existsById(id)){
+        if (!categoryManagementRepository.existsById(id)) {
             throw new EntityNotFoundException(String.format("Category with id: %d was not found", id));
         }
 

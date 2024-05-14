@@ -1,10 +1,11 @@
 package org.marketplace.services;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.marketplace.models.Advertisement;
 import org.marketplace.models.AdvertisementImage;
 import org.marketplace.repositories.AdvertisementImageManagementRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AdvertisementImageManagementService {
@@ -15,7 +16,12 @@ public class AdvertisementImageManagementService {
     }
 
     public AdvertisementImage addImage(AdvertisementImage advertisementImage) {
-        return advertisementImageManagementRepository.save(advertisementImage);
+        try {
+            getAdvertisementImageById(advertisementImage.getId());
+            throw new EntityNotFoundException(String.format("Advertisement image with id: %d already exists!", advertisementImage.getId()));
+        } catch (EntityNotFoundException e) {
+            return advertisementImageManagementRepository.save(advertisementImage);
+        }
     }
 
     public AdvertisementImage getAdvertisementImageById(Long id) {
@@ -23,13 +29,21 @@ public class AdvertisementImageManagementService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Advertisement image with id: %d was not found", id)));
     }
 
-  /*  public Advertisement getAdvertisementImageByAdvertisementId(Long id) {
-        Advertisement advertisement = advertisementImageManagementRepository.findByAdvertisementId(id);
-        if (advertisement == null)
-            throw new EntityNotFoundException(String.format("Advertisement with id: %d was not found", id));
-        return advertisement;
-
+    public AdvertisementImage updateAdvertisementImage(AdvertisementImage advertisementImage) {
+        return advertisementImageManagementRepository.findById(advertisementImage.getId())
+                .map(c -> advertisementImageManagementRepository.save(advertisementImage))
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Advertisement image with id: %d was not found", advertisementImage.getId())));
     }
 
-   */
+    public void deleteAdvertisementImage(Long id) {
+        if (!advertisementImageManagementRepository.existsById(id)) {
+            throw new EntityNotFoundException(String.format("Advertisement image with id: %d was not found", id));
+        }
+
+        advertisementImageManagementRepository.deleteById(id);
+    }
+
+    public List<AdvertisementImage> getAllAdvertisementImages(Long advertisementId) {
+        return advertisementImageManagementRepository.findByAdvertisement_Id(advertisementId);
+    }
 }

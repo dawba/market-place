@@ -1,6 +1,7 @@
 package org.marketplace.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class AdvertisementImage {
@@ -8,16 +9,17 @@ public class AdvertisementImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "advertisementImageId")
     private Long id;
+    @NotNull(message = "Filepath cannot be null")
 
-    private String filename;
+    private String filepath;
     @ManyToOne
     @JoinColumn(name = "advertisementId")
     private Advertisement advertisement;
 
-    public AdvertisementImage(Long id, String filename, Advertisement advertisement) {
+    public AdvertisementImage(Long id, String filepath, Advertisement advertisement) {
         this.id = id;
-        this.filename = filename;
-        this.advertisement=advertisement;
+        this.filepath = filepath;
+        this.advertisement = advertisement;
     }
 
     public AdvertisementImage() {
@@ -32,12 +34,12 @@ public class AdvertisementImage {
         this.id = id;
     }
 
-    public String getFilename() {
-        return filename;
+    public String getFilepath() {
+        return filepath;
     }
 
-    public void setFilename(String filename) {
-        this.filename = filename;
+    public void setFilepath(String filename) {
+        this.filepath = filepath;
     }
 
     public Advertisement getAdvertisement() {
