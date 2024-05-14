@@ -1,12 +1,14 @@
 package org.marketplace.controllers;
 
 import jakarta.validation.Valid;
+import org.marketplace.requests.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 import org.marketplace.models.Advertisement;
 import org.marketplace.services.AdvertisementManagementService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +29,9 @@ public class AdvertisementManagementController {
      * @return added advertisement with HTTP status code
      */
     @PostMapping("/add")
-    public ResponseEntity<Advertisement> requestAddAdvertisement(@Valid @RequestBody Advertisement advertisement) {
+    public Response<Advertisement> requestAddAdvertisement(@Valid @RequestBody Advertisement advertisement) {
         Advertisement ad = advertisementManagementService.addAdvertisement(advertisement);
-        return ResponseEntity.ok(ad);
+        return new Response<Advertisement>(ad, "Advertisement added successfully", HttpStatus.OK);
     }
 
     /**
@@ -38,8 +40,9 @@ public class AdvertisementManagementController {
      */
 
     @DeleteMapping("/{id}")
-    public void requestDeleteAdvertisement(@PathVariable Long id) {
+    public Response<Long> requestDeleteAdvertisement(@PathVariable Long id) {
         advertisementManagementService.deleteAdvertisement(id);
+        return new Response<Long>(id, String.format("Advertisements deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -47,9 +50,10 @@ public class AdvertisementManagementController {
      * @param advertisement advertisement to be updated
      * @return updated advertisement with HTTP status code
      */
-    @PutMapping("/{id}")
-    public Advertisement requestUpdateAdvertisement(@RequestBody Advertisement advertisement) {
-        return advertisementManagementService.updateAdvertisement(advertisement);
+    @PutMapping("/update")
+    public Response<Advertisement> requestUpdateAdvertisement(@RequestBody Advertisement advertisement) {
+        Advertisement ad = advertisementManagementService.updateAdvertisement(advertisement);
+        return new Response<Advertisement>(ad, String.format("Advertisement updated successfully for ID: %d", advertisement.getId()), HttpStatus.OK);
     }
 
     /**
@@ -58,9 +62,9 @@ public class AdvertisementManagementController {
      * @return advertisement with HTTP status code
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Advertisement> requestGetAdvertisement(@PathVariable Long id) {
+    public Response<Advertisement> requestGetAdvertisement(@PathVariable Long id) {
         Advertisement ad = advertisementManagementService.getAdvertisementById(id);
-        return ResponseEntity.ok(ad);
+        return new Response<Advertisement>(ad, String.format("Advertisement retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -68,9 +72,9 @@ public class AdvertisementManagementController {
      * @return list of all advertisements with HTTP status code
      */
     @GetMapping("/all")
-    public ResponseEntity<List<Advertisement>> requestGetAllAdvertisements() {
+    public Response<List<Advertisement>> requestGetAllAdvertisements() {
         List<Advertisement> ads = advertisementManagementService.getAllAdvertisements();
-        return ResponseEntity.ok(ads);
+        return new Response<List<Advertisement>>(ads, "Advertisements retrieved successfully", HttpStatus.OK);
     }
 
     /**
@@ -79,9 +83,9 @@ public class AdvertisementManagementController {
      * @return list of advertisements with HTTP status code
      */
     @GetMapping("/category/{id}")
-    public ResponseEntity<List<Advertisement>> requestGetAdvertisementsByCategory(@PathVariable Long id) {
+    public Response<List<Advertisement>> requestGetAdvertisementsByCategory(@PathVariable Long id) {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByCategory(id);
-        return ResponseEntity.ok(ads);
+        return new Response<List<Advertisement>>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -90,8 +94,8 @@ public class AdvertisementManagementController {
      * @return list of advertisements with HTTP status code
      */
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<Advertisement>> requestGetAdvertisementsByUser(@PathVariable Long id) {
+    public Response<List<Advertisement>> requestGetAdvertisementsByUser(@PathVariable Long id) {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByUser(id);
-        return ResponseEntity.ok(ads);
+        return new Response<List<Advertisement>>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 }

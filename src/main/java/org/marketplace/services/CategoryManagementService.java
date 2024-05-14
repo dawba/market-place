@@ -29,8 +29,18 @@ public class CategoryManagementService {
         return categoryManagementRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Category with id: %d was not found", id)));
     }
-    public List<Advertisement> getAdvertisements()
-    {
-       return null;
+
+    public Category updateCategory(Category category) {
+        return categoryManagementRepository.findById(category.getId())
+                .map(c -> categoryManagementRepository.save(category))
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Category with id: %d was not found", category.getId())));
+    }
+
+    public void deleteCategory(Long id) {
+        if(!categoryManagementRepository.existsById(id)){
+            throw new EntityNotFoundException(String.format("Category with id: %d was not found", id));
+        }
+
+        categoryManagementRepository.deleteById(id);
     }
 }
