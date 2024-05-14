@@ -31,7 +31,7 @@ public class AdvertisementManagementController {
     @PostMapping("/add")
     public Response<Advertisement> requestAddAdvertisement(@Valid @RequestBody Advertisement advertisement) {
         Advertisement ad = advertisementManagementService.addAdvertisement(advertisement);
-        return new Response<Advertisement>(ad, "Advertisement added successfully", HttpStatus.OK);
+        return new Response<Advertisement>(ad, "Advertisement added successfully", HttpStatus.CREATED);
     }
 
     /**

@@ -25,7 +25,7 @@ public class AdvertisementImageManagementController {
     @PostMapping("/add")
     public Response<AdvertisementImage> requestAddImage(@RequestBody AdvertisementImage advertisementImage) {
         AdvertisementImage image = this.advertisementImageManagementService.addImage(advertisementImage);
-        return new Response<>(image, String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()), HttpStatus.OK);
+        return new Response<>(image, String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()), HttpStatus.CREATED);
     }
 
     /**
