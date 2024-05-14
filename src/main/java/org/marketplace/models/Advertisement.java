@@ -1,8 +1,5 @@
 package org.marketplace.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import org.marketplace.enums.AdvertisementStatus;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 public class Advertisement {
