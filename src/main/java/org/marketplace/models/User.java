@@ -1,13 +1,10 @@
 package org.marketplace.models;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.marketplace.enums.UserRole;
 
 @Entity
 public class User {
@@ -18,17 +15,19 @@ public class User {
     @Column(unique = true)
     @Size(min = 5, max = 20, message = "Login must be between 5 and 20 characters long")
     private String login;
-
     private String password;
+
+    private UserRole role;
     @Email(message = "Invalid email address")
     private String email;
     @Pattern(regexp = "^[1-9][0-9]{8}$", message = "Phone number must have 9 digits and not start with 0")
     private String phoneNumber;
 
-    public User(Long id, String login, String password, String email, String phoneNumber) {
+    public User(Long id, String login, String password, UserRole role, String email, String phoneNumber) {
         this.id = id;
         this.login = login;
-        this.password=password;
+        this.password = password;
+        this.role = role;
         this.email = email;
         this.phoneNumber = phoneNumber;
     }
@@ -63,6 +62,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     public String getEmail() {
