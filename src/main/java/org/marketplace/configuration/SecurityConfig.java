@@ -51,11 +51,11 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("defaultUser")
-                .password(passwordEncoder().encode("defaultPass"))
-                .roles("USER");
-    }
+//    @Autowired
+//    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+//        auth.inMemoryAuthentication()
+//                .withUser("defaultUser")
+//                .password(passwordEncoder().encode("defaultPass"))
+//                .roles("USER");
+//    }
 }

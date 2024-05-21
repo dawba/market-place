@@ -18,13 +18,6 @@ public class BasicUserDetailsService implements UserDetailsService {
     }
 
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        if (email.equals("defaultUser")) {
-            return org.springframework.security.core.userdetails.User.builder()
-                    .username(email)
-                    .password("defaultPass")
-                    .roles(UserRole.USER.getValue(),UserRole.ADMIN.getValue())
-                    .build();
-        }
         User user = userManagementRepository.findByEmail(email);
         if (user == null) {
             throw new UsernameNotFoundException(String.format("User does not exist with email: %s", email));
