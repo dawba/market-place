@@ -12,7 +12,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
@@ -24,9 +23,6 @@ public class UserPassRequestFilter extends AbstractAuthenticationProcessingFilte
 
     @Autowired
     private BaseJWT baseJWT;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     public UserPassRequestFilter(String loginUrl, AuthenticationManager authenticationManager) {
         super(loginUrl);
@@ -46,7 +42,7 @@ public class UserPassRequestFilter extends AbstractAuthenticationProcessingFilte
         try {
             creds = new JSONObject(source);
             username = creds.getString("username");
-            password = !username.equals("defaultUser") ? passwordEncoder.encode(creds.getString("password")) : "defaultPass";
+            password = creds.getString("password");
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -54,7 +50,6 @@ public class UserPassRequestFilter extends AbstractAuthenticationProcessingFilte
 
         return getAuthenticationManager().authenticate(authRequest);
     }
-
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         String jwt = baseJWT.generateToken(authResult.getName());
