@@ -19,6 +19,8 @@ import java.util.List;
 public class AdvertisementManagementController {
     private static final Logger logger = LoggerFactory.getLogger(AdvertisementManagementController.class);
     private final AdvertisementManagementService advertisementManagementService;
+
+
     public AdvertisementManagementController(AdvertisementManagementService advertisementManagementService) {
         this.advertisementManagementService = advertisementManagementService;
     }
@@ -40,8 +42,8 @@ public class AdvertisementManagementController {
      */
 
     @DeleteMapping("/{id}")
-    public Response<Long> requestDeleteAdvertisement(@PathVariable Long id) {
-        advertisementManagementService.deleteAdvertisement(id);
+    public Response<Long> requestDeleteAdvertisement(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        advertisementManagementService.deleteAdvertisement(id,token);
         return new Response<Long>(id, String.format("Advertisements deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
