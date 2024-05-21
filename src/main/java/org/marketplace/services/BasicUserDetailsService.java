@@ -1,6 +1,6 @@
 package org.marketplace.services;
 
-import org.marketplace.enums.UserRole;
+import org.marketplace.configuration.CustomUserDetails;
 import org.marketplace.models.User;
 import org.marketplace.repositories.UserManagementRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,11 +22,7 @@ public class BasicUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException(String.format("User does not exist with email: %s", email));
         }
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .roles(UserRole.USER.getValue(),UserRole.ADMIN.getValue())
-                .build();
+        return new CustomUserDetails(user);
 
     }
 }

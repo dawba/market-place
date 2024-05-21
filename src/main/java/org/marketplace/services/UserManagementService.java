@@ -1,13 +1,10 @@
 package org.marketplace.services;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.marketplace.enums.UserRole;
+import org.marketplace.configuration.BaseJWT;
 import org.marketplace.models.User;
 import org.marketplace.repositories.UserManagementRepository;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +13,15 @@ import java.util.List;
 @Service
 public class UserManagementService {
     private final UserManagementRepository userManagementRepository;
+    BaseJWT baseJWT;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthorizationUserUtil authorizationUserUtil;
 
-    private PasswordEncoder passwordEncoder;
-
-    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder) {
+    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, AuthorizationUserUtil authorizationUserUtil, BaseJWT baseJWT) {
         this.userManagementRepository = userManagementRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authorizationUserUtil = authorizationUserUtil;
+        this.baseJWT = baseJWT;
     }
 
     public User registerNewUserAccount(User user) {
@@ -39,40 +39,26 @@ public class UserManagementService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User with id: %d was not found", id)));
     }
 
-    public User updateUser(User user) {
-        User currentUser = getCurrentUser();
-        if (currentUser.getRole().equals(UserRole.USER) && !currentUser.getId().equals(user.getId())) {
+    public User updateUser(User user, String token) {
+        String jwt = token.substring(7);
+        String extractedEmail = baseJWT.extractUsername(jwt);
+        if (!extractedEmail.equals(user.getEmail())) {
             throw new AccessDeniedException("You are not authorized to update this user's details.");
         }
-
-        return registerNewUserAccount(user);
+        User previousUser = userManagementRepository.findByEmail(extractedEmail);
+        previousUser.setPassword(user.getPassword());
+        previousUser.setLogin(user.getLogin());
+        previousUser.setEmail(user.getEmail());
+        previousUser.setPhoneNumber(user.getPhoneNumber());
+        return registerNewUserAccount(previousUser);
     }
 
-    public void deleteUserById(Long id) {
-        if (!userManagementRepository.existsById(id)) {
-            throw new EntityNotFoundException(String.format("User with id: %d was not found", id));
-        }
-        User currentUser = getCurrentUser();
-        if (currentUser.getRole().equals(UserRole.USER) && !currentUser.getId().equals(id)) {
-            throw new AccessDeniedException("You are not authorized to delete this user.");
+    public void deleteUserById(Long id, String token) {
+        User user = getUserById(id);
+        if (!authorizationUserUtil.checkAccessToUserByCurrentUser(token, user)) {
+            throw new AccessDeniedException(String.format("You are not authorized to delete user with id: .", id));
         }
 
         userManagementRepository.deleteById(id);
     }
-
-    public User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
-        }
-
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof UserDetails) {
-            String email = ((UserDetails) principal).getUsername();
-            return userManagementRepository.findByEmail(email);
-        } else {
-            return null;
-        }
-    }
-
 }

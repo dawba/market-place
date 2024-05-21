@@ -1,6 +1,7 @@
 package org.marketplace.controllers;
 
 
+import jakarta.validation.Valid;
 import org.marketplace.models.User;
 import org.marketplace.requests.Response;
 import org.marketplace.services.UserManagementService;
@@ -28,7 +29,7 @@ public class UserManagementController {
      * @return added user with HTTP status code
      */
     @PostMapping("/register")
-    public Response<User> addUser(@RequestBody User user) {
+    public Response<User> addUser(@RequestBody @Valid User user) {
         User addedUser = userManagementService.registerNewUserAccount(user);
         return new Response<User>(addedUser, "User registered successfully", HttpStatus.CREATED);
     }
@@ -62,8 +63,8 @@ public class UserManagementController {
      * @return Response containing the updated user
      */
     @PutMapping("/update")
-    public Response<User> updateUser(@RequestBody User user) {
-        User updatedUser = userManagementService.updateUser(user);
+    public Response<User> updateUser(@RequestBody @Valid User user, @RequestHeader("Authorization") String token) {
+        User updatedUser = userManagementService.updateUser(user, token);
         return new Response<>(updatedUser, "User updated successfully", HttpStatus.OK);
 
     }
@@ -75,8 +76,8 @@ public class UserManagementController {
      * @return Response with HTTP status
      */
     @DeleteMapping("/{id}")
-    public Response<Long> deleteUserById(@PathVariable Long id) {
-        userManagementService.deleteUserById(id);
+    public Response<Long> deleteUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        userManagementService.deleteUserById(id, token);
         return new Response<Long>(id, String.format("User deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
