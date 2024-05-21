@@ -1,5 +1,6 @@
 package org.marketplace.configuration;
 
+import org.marketplace.enums.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeRequests().requestMatchers("/api/user/login").authenticated()
+                .authorizeRequests().requestMatchers("/api/user/login", "/api/user/register").permitAll()
+                .requestMatchers("/api/user/all").hasRole(UserRole.ADMIN.getValue())
                 .anyRequest().authenticated()
                 .and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
