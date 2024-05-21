@@ -34,7 +34,7 @@ public class SecurityConfig {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeRequests().requestMatchers("/api/user/login", "/api/user/register").permitAll()
-                .requestMatchers("/api/user/all").hasRole(UserRole.ADMIN.getValue())
+                .requestMatchers("/api/user/all", "/api/categories/add").hasRole(UserRole.ADMIN.getValue())
                 .anyRequest().authenticated()
                 .and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
