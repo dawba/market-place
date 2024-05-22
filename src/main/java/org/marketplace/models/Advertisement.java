@@ -126,4 +126,7 @@ public class Advertisement {
         this.status = status;
     }
 
+    public User getOwner() {
+        return user;
+    }
 }

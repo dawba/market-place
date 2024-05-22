@@ -90,4 +90,8 @@ public class User {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public boolean isAdmin() {
+        return role == UserRole.ADMIN;
+    }
 }
