@@ -59,9 +59,7 @@ public class ResourceAccessAuthorizationService {
             throw new UserNotFoundException("User not found for resource id: " + resourceId + " and resource type: " + resource);
         }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User currentUser = userManagementRepository.findByLogin(username);
+        User currentUser = extractCurrentUserFromAuth();
 
         if(Objects.equals(resourceOwnerId, currentUser.getId()) || currentUser.isAdmin()){
             logger.info("User has access to the resource, access granted. Proceeding with the request to " + resource + " service.");
@@ -78,8 +76,8 @@ public class ResourceAccessAuthorizationService {
      * For authorizing access, the method uses the request body to fetch the resource id.
      * If the user does not have access to the resource, the method throws a UserNotFoundException.
      *
-     * @param resource
-     * @param resourceId
+     * @param resource type of the resource
+     * @param resourceId id of the resource
      * @throws UserNotFoundException if the user does not have access to the resource
      * @see #authorizeUserAccess(ResourceType, Long) AuthorizeUserAccess method if needed to authorize access just from the resourceId
      */
@@ -89,6 +87,12 @@ public class ResourceAccessAuthorizationService {
         if(accessStatus == AccessStatus.ACCESS_DENIED){
             throw new UserNotFoundException("User not found for resource id: " + resourceId + " and resource type: " + resource);
         }
+    }
+
+    private User extractCurrentUserFromAuth(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        return userManagementRepository.findByLogin(username);
     }
 
     private Long fetchOwnerId(ResourceType resource, Long resourceId) {
