@@ -2,12 +2,15 @@ package org.marketplace.controllers;
 
 
 import jakarta.validation.Valid;
+import org.marketplace.enums.ResourceType;
 import org.marketplace.models.User;
 import org.marketplace.requests.Response;
+import org.marketplace.services.ResourceAccessAuthorizationService;
 import org.marketplace.services.UserManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +21,11 @@ public class UserManagementController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserManagementController.class);
     private final UserManagementService userManagementService;
+    private final ResourceAccessAuthorizationService resourceAccessAuthorizationService;
 
-    public UserManagementController(UserManagementService userManagementService) {
+    public UserManagementController(UserManagementService userManagementService, ResourceAccessAuthorizationService resourceAccessAuthorizationService) {
         this.userManagementService = userManagementService;
+        this.resourceAccessAuthorizationService = resourceAccessAuthorizationService;
     }
 
     /**
@@ -31,7 +36,7 @@ public class UserManagementController {
     @PostMapping("/register")
     public Response<User> addUser(@RequestBody @Valid User user) {
         User addedUser = userManagementService.registerNewUserAccount(user);
-        return new Response<User>(addedUser, "User registered successfully", HttpStatus.CREATED);
+        return new Response<>(addedUser, "User registered successfully", HttpStatus.CREATED);
     }
 
     /**
@@ -42,7 +47,7 @@ public class UserManagementController {
     public Response<List<User>> getAllUsers()
     {
         List<User> users = userManagementService.getAllUsers();
-        return new Response<List<User>>(users, "All users retrieved successfully", HttpStatus.OK);
+        return new Response<>(users, "All users retrieved successfully", HttpStatus.OK);
     }
 
     /**
@@ -54,7 +59,7 @@ public class UserManagementController {
     public Response<User> getUserById(@PathVariable Long id) {
         logger.info("User ID: " + id);
         User user = userManagementService.getUserById(id);
-        return new Response<User>(user, String.format("User retrieved successfully for ID: %d", id), HttpStatus.OK);
+        return new Response<>(user, String.format("User retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -64,6 +69,8 @@ public class UserManagementController {
      */
     @PutMapping("/update")
     public Response<User> updateUser(@RequestBody @Valid User user, @RequestHeader("Authorization") String token) {
+        resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.USER, user.getId());
+
         User updatedUser = userManagementService.updateUser(user, token);
         return new Response<>(updatedUser, "User updated successfully", HttpStatus.OK);
 
@@ -75,10 +82,11 @@ public class UserManagementController {
      * @param id The ID of the user to delete
      * @return Response with HTTP status
      */
+    @PreAuthorize("@resourceAccessAuthorizationService.authorizeUserAccess('ResourceType.User', #id).equals(T(org.marketplace.enums.AccessStatus).ACCESS_GRANTED)")
     @DeleteMapping("/{id}")
-    public Response<Long> deleteUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        userManagementService.deleteUserById(id, token);
-        return new Response<Long>(id, String.format("User deleted successfully for ID: %d", id), HttpStatus.OK);
+    public Response<Long> deleteUserById(@PathVariable Long id) {
+        userManagementService.deleteUserById(id);
+        return new Response<>(id, String.format("User deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
 }

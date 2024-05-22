@@ -3,9 +3,7 @@ package org.marketplace.services;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.marketplace.models.Advertisement;
-import org.marketplace.models.User;
 import org.marketplace.repositories.AdvertisementManagementRepository;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,11 +13,8 @@ import java.util.Optional;
 public class AdvertisementManagementService {
     private final AdvertisementManagementRepository advertisementManagementRepository;
 
-    private final AuthorizationUserUtil authorizationUserUtil;
-
-    public AdvertisementManagementService(AdvertisementManagementRepository advertisementManagementRepository, AuthorizationUserUtil authorizationUserUtil) {
+    public AdvertisementManagementService(AdvertisementManagementRepository advertisementManagementRepository) {
         this.advertisementManagementRepository = advertisementManagementRepository;
-        this.authorizationUserUtil = authorizationUserUtil;
     }
 
     public Advertisement addAdvertisement(Advertisement advertisement) {
@@ -40,13 +35,10 @@ public class AdvertisementManagementService {
         }
     }
 
-    public void deleteAdvertisement(Long id, String token) {
+    public void deleteAdvertisement(Long id) {
         if (!advertisementManagementRepository.existsById(id)) {
             throw new EntityNotFoundException(String.format("Advertisement with id: %d was not found", id));
         }
-        User user = getAdvertisementById(id).getUser();
-        if (!authorizationUserUtil.checkAccessToUserByCurrentUser(token, user))
-            throw new AccessDeniedException(String.format("You are not authorized to delete advertisement with id: ", id));
         advertisementManagementRepository.deleteById(id);
     }
 
