@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface AdvertisementManagementRepository extends JpaRepository<Advertisement, Long> {
-    List<Advertisement> findByCategoryId(Long categoryId);
+    List<Advertisement> findByCategory_Id(Long categoryId);
+    List<Advertisement> findByUser_Id(Long userId);
 }

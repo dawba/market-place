@@ -1,22 +1,101 @@
 package org.marketplace.controllers;
 
+import jakarta.validation.Valid;
+import org.marketplace.requests.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import org.marketplace.models.Advertisement;
-import org.marketplace.models.Category;
 import org.marketplace.services.AdvertisementManagementService;
-import org.marketplace.services.CategoryManagementService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/advertisement")
+@RequestMapping("/api/advertisement")
 public class AdvertisementManagementController {
+    private static final Logger logger = LoggerFactory.getLogger(AdvertisementManagementController.class);
     private final AdvertisementManagementService advertisementManagementService;
     public AdvertisementManagementController(AdvertisementManagementService advertisementManagementService) {
         this.advertisementManagementService = advertisementManagementService;
     }
 
+    /**
+     * Add a new advertisement
+     * @param advertisement advertisement to be added
+     * @return added advertisement with HTTP status code
+     */
     @PostMapping("/add")
-    public Advertisement requestAddOffer(@RequestBody Advertisement advertisement) {
-        return advertisementManagementService.addAdvertisement(advertisement);
+    public Response<Advertisement> requestAddAdvertisement(@Valid @RequestBody Advertisement advertisement) {
+        Advertisement ad = advertisementManagementService.addAdvertisement(advertisement);
+        return new Response<Advertisement>(ad, "Advertisement added successfully", HttpStatus.CREATED);
+    }
+
+    /**
+     * Delete an advertisement
+     * @param id id of the advertisement to be deleted
+     */
+
+    @DeleteMapping("/{id}")
+    public Response<Long> requestDeleteAdvertisement(@PathVariable Long id) {
+        advertisementManagementService.deleteAdvertisement(id);
+        return new Response<Long>(id, String.format("Advertisements deleted successfully for ID: %d", id), HttpStatus.OK);
+    }
+
+    /**
+     * Update an advertisement
+     * @param advertisement advertisement to be updated
+     * @return updated advertisement with HTTP status code
+     */
+    @PutMapping("/update")
+    public Response<Advertisement> requestUpdateAdvertisement(@RequestBody Advertisement advertisement) {
+        Advertisement ad = advertisementManagementService.updateAdvertisement(advertisement);
+        return new Response<Advertisement>(ad, String.format("Advertisement updated successfully for ID: %d", advertisement.getId()), HttpStatus.OK);
+    }
+
+    /**
+     * Get an advertisement by id
+     * @param id id of the advertisement to be retrieved
+     * @return advertisement with HTTP status code
+     */
+    @GetMapping("/{id}")
+    public Response<Advertisement> requestGetAdvertisement(@PathVariable Long id) {
+        Advertisement ad = advertisementManagementService.getAdvertisementById(id);
+        return new Response<Advertisement>(ad, String.format("Advertisement retrieved successfully for ID: %d", id), HttpStatus.OK);
+    }
+
+    /**
+     * Get all advertisements
+     * @return list of all advertisements with HTTP status code
+     */
+    @GetMapping("/all")
+    public Response<List<Advertisement>> requestGetAllAdvertisements() {
+        List<Advertisement> ads = advertisementManagementService.getAllAdvertisements();
+        return new Response<List<Advertisement>>(ads, "Advertisements retrieved successfully", HttpStatus.OK);
+    }
+
+    /**
+     * Get advertisements by category
+     * @param id id of the category
+     * @return list of advertisements with HTTP status code
+     */
+    @GetMapping("/category/{id}")
+    public Response<List<Advertisement>> requestGetAdvertisementsByCategory(@PathVariable Long id) {
+        List<Advertisement> ads = advertisementManagementService.getAdvertisementsByCategory(id);
+        return new Response<List<Advertisement>>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
+    }
+
+    /**
+     * Get advertisements by user
+     * @param id id of the user
+     * @return list of advertisements with HTTP status code
+     */
+    @GetMapping("/user/{id}")
+    public Response<List<Advertisement>> requestGetAdvertisementsByUser(@PathVariable Long id) {
+        List<Advertisement> ads = advertisementManagementService.getAdvertisementsByUser(id);
+        return new Response<List<Advertisement>>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 }
