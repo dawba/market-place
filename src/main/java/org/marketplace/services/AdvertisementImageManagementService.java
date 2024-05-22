@@ -1,5 +1,6 @@
 package org.marketplace.services;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.marketplace.models.AdvertisementImage;
 import org.marketplace.repositories.AdvertisementImageManagementRepository;
@@ -18,7 +19,7 @@ public class AdvertisementImageManagementService {
     public AdvertisementImage addImage(AdvertisementImage advertisementImage) {
         try {
             getAdvertisementImageById(advertisementImage.getId());
-            throw new EntityNotFoundException(String.format("Advertisement image with id: %d already exists!", advertisementImage.getId()));
+            throw new EntityExistsException(String.format("Advertisement image with id: %d already exists!", advertisementImage.getId()));
         } catch (EntityNotFoundException e) {
             return advertisementImageManagementRepository.save(advertisementImage);
         }
