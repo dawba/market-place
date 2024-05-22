@@ -49,7 +49,7 @@ public class ResourceAccessAuthorizationService {
      *
      * @throws UserNotFoundException if the user does not have access to the resource
      * @return AccessStatus that indicates user access status
-     * @see #authorizeUserAccessFromRequestBodyOrThrow(ResourceType, Long) AuthorizeUIserAccessFromRequestBody method if needed to authorize access from the request body
+     * @see #authorizeUserAccessFromRequestBodyOrThrow(ResourceType, Long) AuthorizeUserAccessFromRequestBody method if needed to authorize access from the request body
      */
     public AccessStatus authorizeUserAccess(ResourceType resource, Long resourceId) {
         Long resourceOwnerId = fetchOwnerId(resource, resourceId);
