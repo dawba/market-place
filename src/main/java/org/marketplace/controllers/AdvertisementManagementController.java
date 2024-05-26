@@ -1,7 +1,9 @@
 package org.marketplace.controllers;
 
 import jakarta.validation.Valid;
+import org.marketplace.enums.ResourceType;
 import org.marketplace.requests.Response;
+import org.marketplace.services.ResourceAccessAuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.marketplace.models.Advertisement;
 import org.marketplace.services.AdvertisementManagementService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +21,14 @@ import java.util.List;
 public class AdvertisementManagementController {
     private static final Logger logger = LoggerFactory.getLogger(AdvertisementManagementController.class);
     private final AdvertisementManagementService advertisementManagementService;
-    public AdvertisementManagementController(AdvertisementManagementService advertisementManagementService) {
+
+    private final ResourceAccessAuthorizationService resourceAccessAuthorizationService;
+
+
+
+    public AdvertisementManagementController(AdvertisementManagementService advertisementManagementService, ResourceAccessAuthorizationService resourceAccessAuthorizationService) {
         this.advertisementManagementService = advertisementManagementService;
+        this.resourceAccessAuthorizationService = resourceAccessAuthorizationService;
     }
 
     /**
@@ -31,7 +39,7 @@ public class AdvertisementManagementController {
     @PostMapping("/add")
     public Response<Advertisement> requestAddAdvertisement(@Valid @RequestBody Advertisement advertisement) {
         Advertisement ad = advertisementManagementService.addAdvertisement(advertisement);
-        return new Response<Advertisement>(ad, "Advertisement added successfully", HttpStatus.CREATED);
+        return new Response<>(ad, "Advertisement added successfully", HttpStatus.CREATED);
     }
 
     /**
@@ -39,10 +47,11 @@ public class AdvertisementManagementController {
      * @param id id of the advertisement to be deleted
      */
 
+    @PreAuthorize("@resourceAccessAuthorizationService.authorizeUserAccess('ResourceType.Advertisement', #id).equals(T(org.marketplace.enums.AccessStatus).ACCESS_GRANTED)")
     @DeleteMapping("/{id}")
     public Response<Long> requestDeleteAdvertisement(@PathVariable Long id) {
         advertisementManagementService.deleteAdvertisement(id);
-        return new Response<Long>(id, String.format("Advertisements deleted successfully for ID: %d", id), HttpStatus.OK);
+        return new Response<>(id, String.format("Advertisements deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -52,8 +61,10 @@ public class AdvertisementManagementController {
      */
     @PutMapping("/update")
     public Response<Advertisement> requestUpdateAdvertisement(@RequestBody Advertisement advertisement) {
+        resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.ADVERTISEMENT, advertisement.getId());
+
         Advertisement ad = advertisementManagementService.updateAdvertisement(advertisement);
-        return new Response<Advertisement>(ad, String.format("Advertisement updated successfully for ID: %d", advertisement.getId()), HttpStatus.OK);
+        return new Response<>(ad, String.format("Advertisement updated successfully for ID: %d", advertisement.getId()), HttpStatus.OK);
     }
 
     /**
@@ -64,7 +75,7 @@ public class AdvertisementManagementController {
     @GetMapping("/{id}")
     public Response<Advertisement> requestGetAdvertisement(@PathVariable Long id) {
         Advertisement ad = advertisementManagementService.getAdvertisementById(id);
-        return new Response<Advertisement>(ad, String.format("Advertisement retrieved successfully for ID: %d", id), HttpStatus.OK);
+        return new Response<>(ad, String.format("Advertisement retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -74,7 +85,7 @@ public class AdvertisementManagementController {
     @GetMapping("/all")
     public Response<List<Advertisement>> requestGetAllAdvertisements() {
         List<Advertisement> ads = advertisementManagementService.getAllAdvertisements();
-        return new Response<List<Advertisement>>(ads, "Advertisements retrieved successfully", HttpStatus.OK);
+        return new Response<>(ads, "Advertisements retrieved successfully", HttpStatus.OK);
     }
 
     /**
@@ -85,7 +96,7 @@ public class AdvertisementManagementController {
     @GetMapping("/category/{id}")
     public Response<List<Advertisement>> requestGetAdvertisementsByCategory(@PathVariable Long id) {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByCategory(id);
-        return new Response<List<Advertisement>>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
+        return new Response<>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -96,6 +107,6 @@ public class AdvertisementManagementController {
     @GetMapping("/user/{id}")
     public Response<List<Advertisement>> requestGetAdvertisementsByUser(@PathVariable Long id) {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByUser(id);
-        return new Response<List<Advertisement>>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
+        return new Response<>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 }

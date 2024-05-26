@@ -1,9 +1,12 @@
 package org.marketplace.controllers;
 
+import org.marketplace.enums.ResourceType;
 import org.marketplace.models.AdvertisementImage;
 import org.marketplace.requests.Response;
 import org.marketplace.services.AdvertisementImageManagementService;
+import org.marketplace.services.ResourceAccessAuthorizationService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +15,11 @@ import java.util.List;
 @RequestMapping("/api/advertisement-images")
 public class AdvertisementImageManagementController {
     private final AdvertisementImageManagementService advertisementImageManagementService;
+    private final ResourceAccessAuthorizationService resourceAccessAuthorizationService;
 
-    public AdvertisementImageManagementController(AdvertisementImageManagementService advertisementImageManagementService) {
+    public AdvertisementImageManagementController(AdvertisementImageManagementService advertisementImageManagementService, ResourceAccessAuthorizationService resourceAccessAuthorizationService) {
         this.advertisementImageManagementService = advertisementImageManagementService;
+        this.resourceAccessAuthorizationService = resourceAccessAuthorizationService;
     }
 
     /**
@@ -46,6 +51,8 @@ public class AdvertisementImageManagementController {
      */
     @PutMapping("/update")
     public Response<AdvertisementImage> requestUpdateAdvertisementImage(@RequestBody AdvertisementImage advertisementImage) {
+        resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.ADVERTISEMENT_IMAGE, advertisementImage.getId());
+
         AdvertisementImage image = this.advertisementImageManagementService.updateAdvertisementImage(advertisementImage);
         return new Response<>(image, String.format("Advertisement image updated successfully for ID: %d", advertisementImage.getId()), HttpStatus.OK);
     }
@@ -54,6 +61,7 @@ public class AdvertisementImageManagementController {
      * Delete an advertisement image
      * @param id id of the advertisement image to be deleted
      */
+    @PreAuthorize("@resourceAccessAuthorizationService.authorizeUserAccess('ResourceType.AdvertisementImage', #id).equals(T(org.marketplace.enums.AccessStatus).ACCESS_GRANTED)")
     @DeleteMapping("/{id}")
     public Response<Long> requestDeleteAdvertisementImage(@PathVariable Long id) {
         this.advertisementImageManagementService.deleteAdvertisementImage(id);

@@ -21,7 +21,7 @@ public class AdvertisementManagementService {
         try {
             getAdvertisementById(advertisement.getId());
             throw new EntityExistsException(String.format("Advertisement with id: %d already exsits!", advertisement.getId()));
-        } catch(EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return advertisementManagementRepository.save(advertisement);
         }
     }
@@ -30,16 +30,15 @@ public class AdvertisementManagementService {
         try {
             getAdvertisementById(advertisement.getId());
             return advertisementManagementRepository.save(advertisement);
-        } catch(EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(String.format("Advertisement with id: %d was not found", advertisement.getId()));
         }
     }
 
     public void deleteAdvertisement(Long id) {
-        if(!advertisementManagementRepository.existsById(id)){
+        if (!advertisementManagementRepository.existsById(id)) {
             throw new EntityNotFoundException(String.format("Advertisement with id: %d was not found", id));
         }
-
         advertisementManagementRepository.deleteById(id);
     }
 
@@ -49,7 +48,7 @@ public class AdvertisementManagementService {
 
     public Advertisement getAdvertisementById(Long id) {
         Optional<Advertisement> advertisement = advertisementManagementRepository.findById(id);
-        if(advertisement.isEmpty()){
+        if (advertisement.isEmpty()) {
             throw new EntityNotFoundException(String.format("Advertisement with id: %d was not found", id));
         }
 

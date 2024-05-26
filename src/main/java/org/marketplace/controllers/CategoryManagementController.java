@@ -7,7 +7,7 @@ import org.marketplace.services.CategoryManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,10 +28,11 @@ public class CategoryManagementController {
      * @param category - added category
      * @return added category with HTTP status code
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public Response<Category> requestAddCategory(@Valid @RequestBody Category category) {
         Category addedCategory = categoryManagementService.addCategory(category);
-        return new Response<Category>(addedCategory, "Category added successfully", HttpStatus.CREATED);
+        return new Response<>(addedCategory, "Category added successfully", HttpStatus.CREATED);
     }
 
     /**
@@ -42,7 +43,7 @@ public class CategoryManagementController {
     public Response<List<Category>> requestGetAllCategories() {
         List<Category> categories = categoryManagementService.getAllCategories();
         logger.info("categories length: " + categories.size());
-        return new Response<List<Category>>(categories, "All categories retrieved successfully", HttpStatus.OK);
+        return new Response<>(categories, "All categories retrieved successfully", HttpStatus.OK);
     }
 
     /**
@@ -54,7 +55,7 @@ public class CategoryManagementController {
     public Response<Category> requestGetCategoryById(@PathVariable Long id) {
         logger.info("Category ID: " + id);
         Category category = categoryManagementService.getCategoryById(id);
-        return new Response<Category>(category, String.format("Category retrieved successfully for ID: %d", id), HttpStatus.OK);
+        return new Response<>(category, String.format("Category retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
     /**
@@ -62,10 +63,11 @@ public class CategoryManagementController {
      * @param category category to be updated
      * @return category updated category
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update")
     public Response<Category> requestUpdateCategory(@Valid @RequestBody Category category) {
         Category updatedCategory = categoryManagementService.addCategory(category);
-        return new Response<Category>(updatedCategory, "Category updated successfully", HttpStatus.OK);
+        return new Response<>(updatedCategory, "Category updated successfully", HttpStatus.OK);
     }
 
     /**
@@ -73,9 +75,10 @@ public class CategoryManagementController {
      * @param id id of the category to be deleted
      * @return HTTP status code
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public Response<Long> requestDeleteCategory(@PathVariable Long id) {
         categoryManagementService.deleteCategory(id);
-        return new Response<Long>(id, String.format("Category deleted successfully for ID: %d", id), HttpStatus.OK);
+        return new Response<>(id, String.format("Category deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 }
