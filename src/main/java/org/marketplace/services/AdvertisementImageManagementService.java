@@ -73,7 +73,8 @@ public class AdvertisementImageManagementService {
         return savedDocument;
     }
 
-    private MutableAcl setUpAcl(AdvertisementImage savedDocument) {
+    @Transactional
+    public MutableAcl setUpAcl(AdvertisementImage savedDocument) {
         ObjectIdentityImpl objectIdentity = new ObjectIdentityImpl(AdvertisementImage.class, savedDocument.getId());
         MutableAcl acl = aclService.createAcl(objectIdentity);
         return acl;

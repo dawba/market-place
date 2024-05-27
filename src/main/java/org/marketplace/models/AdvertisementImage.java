@@ -11,8 +11,7 @@ public class AdvertisementImage {
     @NotNull(message = "Filepath cannot be null")
     @Column(name = "filepath")
     private String filepath;
-    @ManyToOne
-    @JoinColumn(name = "advertisementId")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Advertisement advertisement;
 
     public AdvertisementImage(Long id, String filepath, Advertisement advertisement) {

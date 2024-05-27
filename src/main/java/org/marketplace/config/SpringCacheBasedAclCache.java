@@ -1,6 +1,7 @@
 package org.marketplace.config;
 
 import org.springframework.cache.Cache;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.security.acls.domain.AclAuthorizationStrategy;
 import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
 import org.springframework.security.acls.model.Acl;
@@ -18,7 +19,7 @@ public class SpringCacheBasedAclCache implements AclCache {
     private final AclAuthorizationStrategy aclAuthorizationStrategy;
 
     public SpringCacheBasedAclCache(Cache cache, DefaultPermissionGrantingStrategy permissionGrantingStrategy, AclAuthorizationStrategy aclAuthorizationStrategy) {
-        this.cache = cache;
+        this.cache = new ConcurrentMapCacheManager("example").getCache("example");
         this.permissionGrantingStrategy = permissionGrantingStrategy;
         this.aclAuthorizationStrategy = aclAuthorizationStrategy;
     }

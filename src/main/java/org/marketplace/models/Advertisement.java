@@ -18,14 +18,11 @@ public class Advertisement {
     private String title;
     @NotNull(message = "Advertisement requires a description")
     @Size(min = 10, max = 1000, message = "Advertisement description must be between 10 and 1000 characters long")
-
     private String description;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "categoryId")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @NotNull(message = "Category has to be defined for advertisement")
     private Category category;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="userId")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @NotNull(message = "User has to be defined for advertisement")
     private User user;
     @NotNull(message = "Price has to be defined for advertisement")
@@ -48,6 +45,15 @@ public class Advertisement {
         this.status = AdvertisementStatus.ACTIVE;
         this.buyerId = null;
     }
+
+    public Long getBuyerId() {
+        return buyerId;
+    }
+
+    public void setBuyerId(Long buyerId) {
+        this.buyerId = buyerId;
+    }
+
     public Advertisement(){}
 
     public Long getId() {
