@@ -79,10 +79,4 @@ public class AdvertisementImageManagementService {
         MutableAcl acl = aclService.createAcl(objectIdentity);
         return acl;
     }
-
-    @PreAuthorize("hasPermission(#id, 'org.marketplace.models.AdvertisementImage', 'READ')")
-    public AdvertisementImage findById(Long id) {
-        return advertisementImageManagementRepository.findById(id).orElse(null);
-    }
-
 }
