@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public class Advertisement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "advertisementId")
     private Long id;
     @NotNull(message = "Title cannot be null")
     @Size(min = 5, max = 20, message = "Advertisement title must be between 5 and 20 characters long")

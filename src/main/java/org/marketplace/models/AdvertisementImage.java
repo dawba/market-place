@@ -7,10 +7,9 @@ import jakarta.validation.constraints.NotNull;
 public class AdvertisementImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "advertisementImageId")
     private Long id;
     @NotNull(message = "Filepath cannot be null")
-
+    @Column(name = "filepath")
     private String filepath;
     @ManyToOne
     @JoinColumn(name = "advertisementId")
@@ -34,14 +33,6 @@ public class AdvertisementImage {
         this.id = id;
     }
 
-    public String getFilepath() {
-        return filepath;
-    }
-
-    public void setFilepath(String filename) {
-        this.filepath = filepath;
-    }
-
     public Advertisement getAdvertisement() {
         return advertisement;
     }
@@ -50,4 +41,11 @@ public class AdvertisementImage {
         this.advertisement = advertisement;
     }
 
+    public String getFilepath() {
+        return filepath;
+    }
+
+    public void setFilepath(String filepath) {
+        this.filepath = filepath;
+    }
 }
