@@ -33,7 +33,7 @@ public class TokenService {
         return extractExpiration(token).before(new Date());
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -50,7 +50,7 @@ public class TokenService {
     }
 
     /**
-     * Generate a token for the given username
+     * Generate a token for the given username or return an existing one if it is not expired
      * @param username
      * @return token
      */
