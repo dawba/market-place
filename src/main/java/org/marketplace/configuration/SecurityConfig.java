@@ -1,6 +1,7 @@
 package org.marketplace.configuration;
 
 import org.marketplace.enums.UserRole;
+import org.marketplace.requests.LogoutSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,8 @@ public class SecurityConfig {
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+    @Autowired
+    private LogoutSuccessHandler logoutSuccessHandler;
 
     @Bean
     public UserPassRequestFilter userPassRequestFilter(AuthenticationManager authenticationManager) {
@@ -33,11 +36,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeRequests().requestMatchers("/api/user/login", "/api/user/register").permitAll()
+                .authorizeHttpRequests().requestMatchers("/api/user/login", "/api/user/register").permitAll()
                 .requestMatchers("/api/user/all", "/api/categories/add").hasRole(UserRole.ADMIN.getValue())
                 .anyRequest().authenticated()
                 .and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().logout()
+                .logoutUrl("/api/user/logout")
+                .logoutSuccessHandler(logoutSuccessHandler);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(userPassRequestFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -53,11 +59,11 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-//    @Autowired
-//    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.inMemoryAuthentication()
-//                .withUser("defaultUser")
-//                .password(passwordEncoder().encode("defaultPass"))
-//                .roles("USER");
-//    }
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+                .withUser("defaultUser")
+                .password(passwordEncoder().encode("defaultPass"))
+                .roles("USER");
+    }
 }
