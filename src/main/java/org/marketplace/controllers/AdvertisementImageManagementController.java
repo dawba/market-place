@@ -4,6 +4,7 @@ import org.marketplace.models.AdvertisementImage;
 import org.marketplace.requests.Response;
 import org.marketplace.services.AdvertisementImageManagementService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class AdvertisementImageManagementController {
      * @return added advertisement image
      */
     @PostMapping("/add")
+    @PreAuthorize("hasPermission(#advertisementImage, 'WRITE')")
     public Response<AdvertisementImage> requestAddImage(@RequestBody AdvertisementImage advertisementImage) {
         AdvertisementImage image = this.advertisementImageManagementService.addImage(advertisementImage);
         return new Response<>(image, String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()), HttpStatus.CREATED);
@@ -34,6 +36,7 @@ public class AdvertisementImageManagementController {
      * @return advertisement image with HTTP status code
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasPermission(#id, 'org.marketplace.models.AdvertisementImage', 'READ')")
     public Response<AdvertisementImage> requestGetAdvertisementImageById(@PathVariable Long id) {
         AdvertisementImage image = this.advertisementImageManagementService.getAdvertisementImageById(id);
         return new Response<>(image, String.format("Advertisement image retrieved successfully for ID: %d", id), HttpStatus.OK);
