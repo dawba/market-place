@@ -4,6 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.marketplace.configuration.BaseJWT;
 import org.marketplace.models.User;
 import org.marketplace.repositories.UserManagementRepository;
+import org.marketplace.requests.DuplicateEntryException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,18 +14,25 @@ import java.util.List;
 @Service
 public class UserManagementService {
     private final UserManagementRepository userManagementRepository;
-    BaseJWT baseJWT;
     private final PasswordEncoder passwordEncoder;
 
-    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, BaseJWT baseJWT) {
+    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder) {
         this.userManagementRepository = userManagementRepository;
         this.passwordEncoder = passwordEncoder;
-        this.baseJWT = baseJWT;
     }
 
     public User registerNewUserAccount(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userManagementRepository.save(user);
+        try {
+            return userManagementRepository.save(user);
+        }catch (DataIntegrityViolationException e)
+        {
+            if(userManagementRepository.findByEmail(user.getEmail())!=null)
+                throw new DuplicateEntryException(String.format("Duplicate entry for email: %s", user.getEmail()));
+            else
+                throw new DuplicateEntryException(String.format("Duplicate entry for login: %s", user.getLogin()));
+        }
+
     }
 
 
@@ -36,10 +45,8 @@ public class UserManagementService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User with id: %d was not found", id)));
     }
 
-    public User updateUser(User user, String token) {
-        String jwt = token.substring(7);
-        String previousUsername = baseJWT.extractUsername(jwt);
-        User previousUser = userManagementRepository.findByEmail(previousUsername);
+    public User updateUser(User user) {
+        User previousUser = userManagementRepository.findByEmail(user.getEmail());
         previousUser.setPassword(user.getPassword());
         previousUser.setLogin(user.getLogin());
         previousUser.setEmail(user.getEmail());
