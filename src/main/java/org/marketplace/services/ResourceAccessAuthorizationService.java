@@ -92,7 +92,7 @@ public class ResourceAccessAuthorizationService {
     private User extractCurrentUserFromAuth(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-        return userManagementRepository.findByLogin(username);
+        return userManagementRepository.findByEmail(username);
     }
 
     private Long fetchOwnerId(ResourceType resource, Long resourceId) {
