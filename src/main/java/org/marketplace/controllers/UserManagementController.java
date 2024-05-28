@@ -34,7 +34,7 @@ public class UserManagementController {
      * @return added user with HTTP status code
      */
     @PostMapping("/register")
-    public Response<User> addUser(@RequestBody @Valid User user) {
+    public Response<User> addUser(@Valid @RequestBody User user) {
         User addedUser = userManagementService.registerNewUserAccount(user);
         return new Response<>(addedUser, "User registered successfully", HttpStatus.CREATED);
     }
