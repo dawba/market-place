@@ -1,9 +1,18 @@
 package org.marketplace.services;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import org.marketplace.builders.EmailBuilder;
 import org.marketplace.configuration.BaseJWT;
+import org.marketplace.models.Email;
+import org.marketplace.models.RegistrationToken;
 import org.marketplace.models.User;
+import org.marketplace.repositories.RegistrationTokenManagementRepository;
 import org.marketplace.repositories.UserManagementRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,19 +20,74 @@ import java.util.List;
 
 @Service
 public class UserManagementService {
+    @Autowired
     private final UserManagementRepository userManagementRepository;
     BaseJWT baseJWT;
+
+    @Autowired
     private final PasswordEncoder passwordEncoder;
 
-    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, BaseJWT baseJWT) {
+    @Autowired
+    RegistrationTokenManagementRepository registrationTokenManagementRepository;
+
+    @Autowired
+    EmailService emailService;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserManagementService.class);
+
+    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, BaseJWT baseJWT, RegistrationTokenManagementRepository registrationTokenManagementRepository, EmailService emailService) {
         this.userManagementRepository = userManagementRepository;
         this.passwordEncoder = passwordEncoder;
         this.baseJWT = baseJWT;
+        this.registrationTokenManagementRepository = registrationTokenManagementRepository;
+        this.emailService = emailService;
     }
 
     public User registerNewUserAccount(User user) {
+        if (userManagementRepository.existsByEmail(user.getEmail())) {
+            throw new EntityExistsException(String.format("User with email: %s already exists", user.getEmail()));
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userManagementRepository.save(user);
+
+
+        RegistrationToken registrationToken = new RegistrationToken(user);
+        logger.info("User object: " + user);
+
+        Email mailMessage = new EmailBuilder()
+                .setTo(user.getEmail())
+                .setSubject("Complete your registration for marketplace!")
+                .setContent("Hello " + user.getLogin() + ",\n\nThank you for registering for our platform! \n"
+                        +"To confirm your account, please click here : "
+                        + "http://localhost:8080/api/user/confirm-account?token=" + registrationToken.getConfirmationToken())
+                .build();
+
+        emailService.sendEmail(mailMessage);
+        userManagementRepository.save(user);
+        registrationTokenManagementRepository.save(registrationToken);
+
+        logger.info("User created: " + user);
+        logger.info("Registration token for the user: " + registrationToken.getConfirmationToken());
+        return user;
+    }
+
+    public User confirmUserAccount(String token) {
+        String trimmedToken = token.trim();
+        RegistrationToken registrationToken = registrationTokenManagementRepository.findByConfirmationToken(trimmedToken);
+
+        if (registrationToken == null) {
+            throw new AuthenticationServiceException("Token not found, could not verify email.");
+        }
+
+        String tokenRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+        if (!token.trim().matches(tokenRegex)) {
+            throw new AuthenticationServiceException("Forbidden token format, could not verify email");
+        }
+
+        User user = userManagementRepository.findByEmailIgnoreCase(registrationToken.getUser().getEmail());
+        user.setVerified(true);
+        userManagementRepository.save(user);
+        return user;
     }
 
 
