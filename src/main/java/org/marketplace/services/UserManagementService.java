@@ -1,7 +1,6 @@
 package org.marketplace.services;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.marketplace.configuration.BaseJWT;
 import org.marketplace.models.User;
 import org.marketplace.repositories.UserManagementRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,13 +11,13 @@ import java.util.List;
 @Service
 public class UserManagementService {
     private final UserManagementRepository userManagementRepository;
-    BaseJWT baseJWT;
+    TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, BaseJWT baseJWT) {
+    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, TokenService tokenService) {
         this.userManagementRepository = userManagementRepository;
         this.passwordEncoder = passwordEncoder;
-        this.baseJWT = baseJWT;
+        this.tokenService = tokenService;
     }
 
     public User registerNewUserAccount(User user) {
@@ -38,7 +37,7 @@ public class UserManagementService {
 
     public User updateUser(User user, String token) {
         String jwt = token.substring(7);
-        String previousUsername = baseJWT.extractUsername(jwt);
+        String previousUsername = tokenService.extractUsername(jwt);
         User previousUser = userManagementRepository.findByEmail(previousUsername);
         previousUser.setPassword(user.getPassword());
         previousUser.setLogin(user.getLogin());

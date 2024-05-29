@@ -7,6 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.marketplace.cache.TokenCache;
+import org.marketplace.services.TokenService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,7 +26,8 @@ import java.io.IOException;
 public class UserPassRequestFilter extends AbstractAuthenticationProcessingFilter {
 
     @Autowired
-    private BaseJWT baseJWT;
+    private TokenService tokenService;
+    Logger logger = LoggerFactory.getLogger(UserPassRequestFilter.class);
 
     public UserPassRequestFilter(String loginUrl, AuthenticationManager authenticationManager) {
         super(loginUrl);
@@ -52,7 +57,9 @@ public class UserPassRequestFilter extends AbstractAuthenticationProcessingFilte
     }
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String jwt = baseJWT.generateToken(authResult.getName());
+        String jwt = tokenService.generateToken(authResult.getName());
         response.addHeader("Authorization", "Bearer " + jwt);
+        response.setStatus(HttpServletResponse.SC_OK);
+        logger.info("Authentication successful");
     }
 }
