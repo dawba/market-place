@@ -1,7 +1,6 @@
 package org.marketplace.configuration;
 
 import org.marketplace.models.User;
-import org.marketplace.enums.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,6 +48,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.isVerified();
     }
 }
