@@ -36,7 +36,7 @@ public class UserManagementController {
     @PostMapping("/register")
     public Response<User> addUser(@Valid @RequestBody User user) {
         User addedUser = userManagementService.registerNewUserAccount(user);
-        return new Response<>(addedUser, "User registered successfully", HttpStatus.CREATED);
+        return new Response<>(addedUser, "Email verification link was sent to your provided email address", HttpStatus.CREATED);
     }
 
     /**
@@ -89,4 +89,23 @@ public class UserManagementController {
         return new Response<>(id, String.format("User deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
+    /**
+     * Confirm user account
+     * @param token The token to confirm the user account
+     * @return Response containing the confirmed user
+     */
+    @GetMapping("/confirm-account")
+    public Response<User> confirmUserAccount(@RequestParam String token) {
+        logger.info("Received request to confirm account with token: " + token);
+
+        try {
+            User confirmedUser = userManagementService.confirmUserAccount(token);
+            logger.info("User account confirmed successfully for token: " + token);
+            return new Response<>(confirmedUser, "User account confirmed successfully", HttpStatus.OK);
+        }
+        catch (Exception e) {
+            logger.info("Error confirming user account for token: " + token + ". Error message: " + e.getMessage());
+            return new Response<>(null, "Error confirming user account for token: " + token + ".\nError message: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

@@ -5,7 +5,7 @@ import org.marketplace.requests.LogoutSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
@@ -28,15 +27,24 @@ public class SecurityConfig {
     private LogoutSuccessHandler logoutSuccessHandler;
 
     @Bean
-    public UserPassRequestFilter userPassRequestFilter(AuthenticationManager authenticationManager) {
-        return new UserPassRequestFilter("/api/user/login", authenticationManager);
+    public UserPassRequestFilter userPassRequestFilter(AuthenticationManager authenticationManager, CustomAuthenticationFailureHandler failureHandler) {
+        UserPassRequestFilter filter = new UserPassRequestFilter("/api/user/login", authenticationManager, failureHandler);
+        filter.setAuthenticationFailureHandler(failureHandler);
+        return filter;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    public CustomAuthenticationFailureHandler customAuthenticationFailureHandler() {
+        return new CustomAuthenticationFailureHandler();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager, CustomAuthenticationFailureHandler failureHandler) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests().requestMatchers("/api/user/login", "/api/user/register").permitAll()
+                .authorizeHttpRequests()
+                .requestMatchers(HttpMethod.GET, "/api/user/confirm-account").permitAll()
+                .requestMatchers("/api/user/login", "/api/user/register").permitAll()
                 .requestMatchers("/api/user/all", "/api/categories/add").hasRole(UserRole.ADMIN.getValue())
                 .anyRequest().authenticated()
                 .and().sessionManagement()
@@ -45,7 +53,8 @@ public class SecurityConfig {
                 .logoutUrl("/api/user/logout")
                 .logoutSuccessHandler(logoutSuccessHandler);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(userPassRequestFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(userPassRequestFilter(authenticationManager, failureHandler), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

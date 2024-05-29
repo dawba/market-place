@@ -19,18 +19,33 @@ public class User {
     @NotNull
     private String password;
 
-    private UserRole role;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role = UserRole.USER;
+
     @Email(message = "Invalid email address")
     @Column(unique = true)
     private String email;
     @Pattern(regexp = "^[1-9][0-9]{8}$", message = "Phone number must have 9 digits and not start with 0")
     private String phoneNumber;
 
+    @Column(name = "is_verified")
+    private boolean isVerified;
+
+    public User(String login, String password, String email, String phoneNumber) {
+        this.login = login;
+        this.password = password;
+        this.role = UserRole.USER;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.isVerified = false;
+    }
+
     public User(Long id, String login, String password, UserRole role, String email, String phoneNumber) {
         this.id = id;
         this.login = login;
         this.password = password;
-        this.role = role;
+        this.role = role != null ? role : UserRole.USER;  // Default role if not specified
         this.email = email;
         this.phoneNumber = phoneNumber;
     }
@@ -93,5 +108,25 @@ public class User {
 
     public boolean isAdmin() {
         return role == UserRole.ADMIN;
+    }
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
+    }
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", role=" + role +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                '}';
     }
 }
