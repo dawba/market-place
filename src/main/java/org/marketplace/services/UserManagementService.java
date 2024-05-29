@@ -3,7 +3,6 @@ package org.marketplace.services;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.marketplace.builders.EmailBuilder;
-import org.marketplace.configuration.BaseJWT;
 import org.marketplace.models.Email;
 import org.marketplace.models.RegistrationToken;
 import org.marketplace.models.User;
