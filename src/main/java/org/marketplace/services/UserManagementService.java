@@ -8,6 +8,8 @@ import org.marketplace.models.RegistrationToken;
 import org.marketplace.models.User;
 import org.marketplace.repositories.RegistrationTokenManagementRepository;
 import org.marketplace.repositories.UserManagementRepository;
+import org.marketplace.requests.DuplicateEntryException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +47,11 @@ public class UserManagementService {
             throw new EntityExistsException(String.format("User with email: %s already exists", user.getEmail()));
         }
 
+        if(userManagementRepository.existsByLogin(user.getLogin())) {
+            throw new EntityExistsException(String.format("User with login: %s already exists", user.getLogin()));
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-
         RegistrationToken registrationToken = new RegistrationToken(user);
         logger.info("User object: " + user);
 
@@ -87,7 +91,6 @@ public class UserManagementService {
         return user;
     }
 
-
     public List<User> getAllUsers() {
         return userManagementRepository.findAll();
     }
@@ -97,15 +100,24 @@ public class UserManagementService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User with id: %d was not found", id)));
     }
 
-    public User updateUser(User user, String token) {
-        String jwt = token.substring(7);
-        String previousUsername = tokenService.extractUsername(jwt);
-        User previousUser = userManagementRepository.findByEmail(previousUsername);
-        previousUser.setPassword(user.getPassword());
+    public User updateUserAccount(User user) {
+        User previousUser = userManagementRepository.findByEmail(user.getEmail());
+        previousUser.setPassword(passwordEncoder.encode(user.getPassword()));
         previousUser.setLogin(user.getLogin());
         previousUser.setEmail(user.getEmail());
         previousUser.setPhoneNumber(user.getPhoneNumber());
-        return registerNewUserAccount(previousUser);
+        return updateUser(previousUser);
+    }
+
+    private User updateUser(User user) {
+        try {
+            return userManagementRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            if (userManagementRepository.existsByEmail(user.getEmail()))
+                throw new DuplicateEntryException(String.format("Duplicate entry for email: %s", user.getEmail()));
+
+            throw new DuplicateEntryException(String.format("Duplicate entry for login: %s", user.getLogin()));
+        }
     }
 
     public void deleteUserById(Long id) {

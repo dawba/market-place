@@ -68,10 +68,10 @@ public class UserManagementController {
      * @return Response containing the updated user
      */
     @PutMapping("/update")
-    public Response<User> updateUser(@RequestBody @Valid User user, @RequestHeader("Authorization") String token) {
+    public Response<User> updateUser(@RequestBody @Valid User user) {
         resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.USER, user.getId());
 
-        User updatedUser = userManagementService.updateUser(user, token);
+        User updatedUser = userManagementService.updateUserAccount(user);
         return new Response<>(updatedUser, "User updated successfully", HttpStatus.OK);
 
     }
