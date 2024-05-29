@@ -20,8 +20,8 @@ public class User {
     private String password;
 
     private UserRole role;
-    @Column(unique = true)
     @Email(message = "Invalid email address")
+    @Column(unique = true)
     private String email;
     @Pattern(regexp = "^[1-9][0-9]{8}$", message = "Phone number must have 9 digits and not start with 0")
     private String phoneNumber;

@@ -38,7 +38,7 @@ public class UserManagementService {
     public User updateUser(User user, String token) {
         String jwt = token.substring(7);
         String previousUsername = tokenService.extractUsername(jwt);
-        User previousUser = userManagementRepository.findByLogin(previousUsername);
+        User previousUser = userManagementRepository.findByEmail(previousUsername);
         previousUser.setPassword(user.getPassword());
         previousUser.setLogin(user.getLogin());
         previousUser.setEmail(user.getEmail());
