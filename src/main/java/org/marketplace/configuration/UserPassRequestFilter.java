@@ -9,6 +9,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.marketplace.models.User;
 import org.marketplace.repositories.UserManagementRepository;
+import org.marketplace.cache.TokenCache;
+import org.marketplace.services.TokenService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -25,7 +29,8 @@ import java.io.IOException;
 public class UserPassRequestFilter extends AbstractAuthenticationProcessingFilter {
 
     @Autowired
-    private BaseJWT baseJWT;
+    private TokenService tokenService;
+    Logger logger = LoggerFactory.getLogger(UserPassRequestFilter.class);
 
     @Autowired
     private UserManagementRepository userManagementRepository;
@@ -77,11 +82,12 @@ public class UserPassRequestFilter extends AbstractAuthenticationProcessingFilte
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
-        String jwt = baseJWT.generateToken(authResult.getName());
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        String jwt = tokenService.generateToken(authResult.getName());
         response.addHeader("Authorization", "Bearer " + jwt);
-        response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
         response.getWriter().write("{\"Bearer\": \"" + jwt + "\"}");
+        response.setStatus(HttpServletResponse.SC_OK);
+        logger.info("Authentication successful");
     }
 }

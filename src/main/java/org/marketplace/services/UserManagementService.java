@@ -22,9 +22,7 @@ import java.util.List;
 public class UserManagementService {
     @Autowired
     private final UserManagementRepository userManagementRepository;
-    BaseJWT baseJWT;
-
-    @Autowired
+    TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -35,10 +33,10 @@ public class UserManagementService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserManagementService.class);
 
-    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, BaseJWT baseJWT, RegistrationTokenManagementRepository registrationTokenManagementRepository, EmailService emailService) {
+    public UserManagementService(UserManagementRepository userManagementRepository, PasswordEncoder passwordEncoder, TokenService tokenService, EmailService emailService, RegistrationTokenManagementRepository registrationTokenManagementRepository) {
         this.userManagementRepository = userManagementRepository;
         this.passwordEncoder = passwordEncoder;
-        this.baseJWT = baseJWT;
+        this.tokenService = tokenService;
         this.registrationTokenManagementRepository = registrationTokenManagementRepository;
         this.emailService = emailService;
     }
@@ -102,8 +100,8 @@ public class UserManagementService {
 
     public User updateUser(User user, String token) {
         String jwt = token.substring(7);
-        String previousUsername = baseJWT.extractUsername(jwt);
-        User previousUser = userManagementRepository.findByLogin(previousUsername);
+        String previousUsername = tokenService.extractUsername(jwt);
+        User previousUser = userManagementRepository.findByEmail(previousUsername);
         previousUser.setPassword(user.getPassword());
         previousUser.setLogin(user.getLogin());
         previousUser.setEmail(user.getEmail());
