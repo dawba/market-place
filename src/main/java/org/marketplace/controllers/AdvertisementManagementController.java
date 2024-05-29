@@ -109,4 +109,11 @@ public class AdvertisementManagementController {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByUser(id);
         return new Response<>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
+
+    @PutMapping("/buy/{id}")
+    public Response<Advertisement> buyAdvertisementWithId(@PathVariable Long id) {
+        Long currentUserId = resourceAccessAuthorizationService.extractCurrentUserFromAuth().getId();
+        Advertisement ad = advertisementManagementService.buyAdvertisement(id, currentUserId);
+        return new Response<>(ad, String.format("Advertisement with id: %d was bought by user with id: %d", id, currentUserId), HttpStatus.OK);
+    }
 }

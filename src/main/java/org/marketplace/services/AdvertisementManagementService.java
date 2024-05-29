@@ -2,6 +2,7 @@ package org.marketplace.services;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import org.marketplace.enums.AdvertisementStatus;
 import org.marketplace.models.Advertisement;
 import org.marketplace.repositories.AdvertisementManagementRepository;
 import org.springframework.stereotype.Service;
@@ -61,5 +62,12 @@ public class AdvertisementManagementService {
 
     public List<Advertisement> getAdvertisementsByCategory(Long id) {
         return advertisementManagementRepository.findByCategory_Id(id);
+    }
+
+    public Advertisement buyAdvertisement(Long id, Long currentUserId){
+        Advertisement ad = getAdvertisementById(id);
+        ad.setStatus(AdvertisementStatus.BUYER);
+        ad.setBuyerId(currentUserId);
+        return advertisementManagementRepository.save(ad);
     }
 }

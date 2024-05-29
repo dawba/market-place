@@ -129,4 +129,12 @@ public class Advertisement {
     public User getOwner() {
         return user;
     }
+
+    public Long getBuyerId() {
+        return buyerId;
+    }
+
+    public void setBuyerId(Long buyerId) {
+        this.buyerId = buyerId;
+    }
 }
