@@ -71,7 +71,7 @@ public class UserManagementController {
     public Response<User> updateUser(@RequestBody @Valid User user) {
         resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.USER, user.getId());
 
-        User updatedUser = userManagementService.updateUser(user);
+        User updatedUser = userManagementService.updateUserAccount(user);
         return new Response<>(updatedUser, "User updated successfully", HttpStatus.OK);
 
     }
