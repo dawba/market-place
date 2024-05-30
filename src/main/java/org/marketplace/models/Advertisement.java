@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import org.marketplace.enums.AdvertisementStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 public class Advertisement {
@@ -37,6 +38,10 @@ public class Advertisement {
     private LocalDateTime updatedAt = LocalDateTime.now();
     private AdvertisementStatus status;
     private Long buyerId;
+    @ElementCollection
+    @CollectionTable(name = "observers", joinColumns = @JoinColumn(name = "advertisement_id"))
+    @Column(name = "observer")
+    private List<String> observers;
 
     public Advertisement(Long id,String title, String description, Category category, User user, double price, String location) {
         this.id=id;
@@ -48,6 +53,7 @@ public class Advertisement {
         this.location = location;
         this.status = AdvertisementStatus.ACTIVE;
         this.buyerId = null;
+        this.observers = null;
     }
     public Advertisement(){}
 
@@ -136,5 +142,13 @@ public class Advertisement {
 
     public void setBuyerId(Long buyerId) {
         this.buyerId = buyerId;
+    }
+
+    public List<String> getObservers() {
+        return observers;
+    }
+
+    public void setObservers(List<String> observers) {
+        this.observers = observers;
     }
 }
