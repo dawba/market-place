@@ -41,7 +41,11 @@ public class AdvertisementManagementService {
 
     public Advertisement updateAdvertisement(Advertisement advertisement) {
         try {
-            getAdvertisementById(advertisement.getId());
+            Advertisement ad = getAdvertisementById(advertisement.getId());
+            if(ad.getPrice() != advertisement.getPrice()){
+                sendPriceChangeEmail(ad.getUser().getEmail(), ad.getTitle(), advertisement.getPrice());
+            }
+
             return advertisementManagementRepository.save(advertisement);
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(String.format("Advertisement with id: %d was not found", advertisement.getId()));
@@ -52,6 +56,9 @@ public class AdvertisementManagementService {
         if (!advertisementManagementRepository.existsById(id)) {
             throw new EntityNotFoundException(String.format("Advertisement with id: %d was not found", id));
         }
+
+        Advertisement ad = getAdvertisementById(id);
+        sendEmailToObservers(ad.getObservers(), AdvertisementStatus.DELETED, ad.getTitle());
         advertisementManagementRepository.deleteById(id);
     }
 
@@ -190,6 +197,16 @@ public class AdvertisementManagementService {
                 .setTo(email)
                 .setSubject("Advertisement " + adTitle + "has been deleted!")
                 .setContent("Hello " + email + ",\n\nThe advertisement you are observing has been deleted and is no longer available.")
+                .build();
+
+        emailService.sendEmail(mailMessage);
+    }
+
+    public void sendPriceChangeEmail(String email, String adTitle, double price){
+        Email mailMessage = new EmailBuilder()
+                .setTo(email)
+                .setSubject("Price change for advertisement " + adTitle)
+                .setContent("Hello " + email + ",\n\nThe price for the advertisement " + adTitle + " has been changed to " + price)
                 .build();
 
         emailService.sendEmail(mailMessage);
