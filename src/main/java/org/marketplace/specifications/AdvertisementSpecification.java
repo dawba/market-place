@@ -22,9 +22,9 @@ public class AdvertisementSpecification implements Specification<Advertisement> 
         if (operation.equalsIgnoreCase(":")) {
             if (key.equalsIgnoreCase("categoryId")) {
                 return criteriaBuilder.equal(root.get("category").get("id"), value);
-            } else if (root.get(key).getJavaType() == String.class) {
+            } else if (key.equalsIgnoreCase("title") || key.equalsIgnoreCase("location")) {
                 return criteriaBuilder.like(root.get(key), "%" + value + "%");
-            } else {
+            } else if (key.equalsIgnoreCase("price") || key.equalsIgnoreCase("status")) {
                 return criteriaBuilder.equal(root.get(key), value);
             }
         }
