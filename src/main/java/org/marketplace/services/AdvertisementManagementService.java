@@ -8,12 +8,15 @@ import org.marketplace.models.Advertisement;
 import org.marketplace.models.Email;
 import org.marketplace.models.User;
 import org.marketplace.repositories.AdvertisementManagementRepository;
+import org.marketplace.specifications.AdvertisementSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -210,5 +213,15 @@ public class AdvertisementManagementService {
                 .build();
 
         emailService.sendEmail(mailMessage);
+    }
+
+    public List<Advertisement> searchAdvertisements(Map<String, String> searchParams) {
+        Specification<Advertisement> specification = Specification.where(null);
+
+        for(Map.Entry<String, String> searchEntry: searchParams.entrySet()){
+            specification = specification.and(new AdvertisementSpecification(searchEntry.getKey(), ":", searchEntry.getValue()));
+        }
+
+        return advertisementManagementRepository.findAll(specification);
     }
 }

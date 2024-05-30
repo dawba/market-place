@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/advertisement")
@@ -157,5 +158,11 @@ public class AdvertisementManagementController {
     public Response<Advertisement> changeAdvertisementStatus(@PathVariable Long id, @PathVariable String status) {
         Advertisement ad = advertisementManagementService.changeAdvertisementStatus(id, status);
         return new Response<>(ad, String.format("Advertisement with id: %d status was changed to: %s", id, status), HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public Response<List<Advertisement>> requestSearchAdvertisements(@RequestParam Map<String, String> searchParams) {
+        List<Advertisement> ads = advertisementManagementService.searchAdvertisements(searchParams);
+        return new Response<>(ads, "Advertisements retrieved successfully", HttpStatus.OK);
     }
 }
