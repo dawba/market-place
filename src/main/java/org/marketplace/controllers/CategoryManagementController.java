@@ -32,6 +32,7 @@ public class CategoryManagementController {
     @PostMapping("/add")
     public Response<Category> requestAddCategory(@Valid @RequestBody Category category) {
         Category addedCategory = categoryManagementService.addCategory(category);
+        logger.info("Category added successfully: " + category);
         return new Response<>(addedCategory, "Category added successfully", HttpStatus.CREATED);
     }
 
@@ -42,7 +43,7 @@ public class CategoryManagementController {
     @GetMapping("/all")
     public Response<List<Category>> requestGetAllCategories() {
         List<Category> categories = categoryManagementService.getAllCategories();
-        logger.info("categories length: " + categories.size());
+        logger.info("Categories retrieved successfully");
         return new Response<>(categories, "All categories retrieved successfully", HttpStatus.OK);
     }
 
@@ -53,8 +54,8 @@ public class CategoryManagementController {
      */
     @GetMapping("/{id}")
     public Response<Category> requestGetCategoryById(@PathVariable Long id) {
-        logger.info("Category ID: " + id);
         Category category = categoryManagementService.getCategoryById(id);
+        logger.info("Category retrieved successfully for ID: " + id + "\n" + category);
         return new Response<>(category, String.format("Category retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
@@ -67,6 +68,7 @@ public class CategoryManagementController {
     @PutMapping("/update")
     public Response<Category> requestUpdateCategory(@Valid @RequestBody Category category) {
         Category updatedCategory = categoryManagementService.addCategory(category);
+        logger.info("Category updated successfully: " + category);
         return new Response<>(updatedCategory, "Category updated successfully", HttpStatus.OK);
     }
 
@@ -79,6 +81,7 @@ public class CategoryManagementController {
     @DeleteMapping("/{id}")
     public Response<Long> requestDeleteCategory(@PathVariable Long id) {
         categoryManagementService.deleteCategory(id);
+        logger.info("Category deleted successfully for ID: " + id);
         return new Response<>(id, String.format("Category deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 }
