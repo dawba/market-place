@@ -39,8 +39,8 @@ public class AdvertisementManagementController {
      */
     @PostMapping("/add")
     public Response<Advertisement> requestAddAdvertisement(@Valid @RequestBody Advertisement advertisement) {
-        logger.info("Adding advertisement: " + advertisement);
         Advertisement ad = advertisementManagementService.addAdvertisement(advertisement);
+        logger.info("Advertisement added successfully.\n" + ad.toString());
         return new Response<>(ad, "Advertisement added successfully", HttpStatus.CREATED);
     }
 
@@ -53,6 +53,7 @@ public class AdvertisementManagementController {
     @DeleteMapping("/{id}")
     public Response<Long> requestDeleteAdvertisement(@PathVariable Long id) {
         advertisementManagementService.deleteAdvertisement(id);
+        logger.info("Advertisement deleted successfully for ID: " + id);
         return new Response<>(id, String.format("Advertisements deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
@@ -64,8 +65,8 @@ public class AdvertisementManagementController {
     @PutMapping("/update")
     public Response<Advertisement> requestUpdateAdvertisement(@RequestBody Advertisement advertisement) {
         resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.ADVERTISEMENT, advertisement.getId());
-
         Advertisement ad = advertisementManagementService.updateAdvertisement(advertisement);
+        logger.info("Advertisement updated successfully.\n " + ad.toString());
         return new Response<>(ad, String.format("Advertisement updated successfully for ID: %d", advertisement.getId()), HttpStatus.OK);
     }
 
@@ -77,6 +78,7 @@ public class AdvertisementManagementController {
     @GetMapping("/{id}")
     public Response<Advertisement> requestGetAdvertisement(@PathVariable Long id) {
         Advertisement ad = advertisementManagementService.getAdvertisementById(id);
+        logger.info("Request for advertisement with id: " + id + "\n" + ad.toString());
         return new Response<>(ad, String.format("Advertisement retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
@@ -87,6 +89,7 @@ public class AdvertisementManagementController {
     @GetMapping("/all")
     public Response<List<Advertisement>> requestGetAllAdvertisements() {
         List<Advertisement> ads = advertisementManagementService.getAllAdvertisements();
+        logger.info("Retrieved all advertisements.");
         return new Response<>(ads, "Advertisements retrieved successfully", HttpStatus.OK);
     }
 
@@ -98,6 +101,7 @@ public class AdvertisementManagementController {
     @GetMapping("/category/{id}")
     public Response<List<Advertisement>> requestGetAdvertisementsByCategory(@PathVariable Long id) {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByCategory(id);
+        logger.info("Request for advertisements for category ID: " + id);
         return new Response<>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
@@ -109,6 +113,7 @@ public class AdvertisementManagementController {
     @GetMapping("/user/{id}")
     public Response<List<Advertisement>> requestGetAdvertisementsByUser(@PathVariable Long id) {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByUser(id);
+        logger.info("Request for advertisements for user ID: " + id);
         return new Response<>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
@@ -121,6 +126,7 @@ public class AdvertisementManagementController {
     public Response<Advertisement> buyAdvertisementWithId(@PathVariable Long id) {
         Long currentUserId = resourceAccessAuthorizationService.extractCurrentUserFromAuth().getId();
         Advertisement ad = advertisementManagementService.buyAdvertisement(id, currentUserId);
+        logger.info("Request to buy advertisement with ID: " + id + " by user with ID: " + currentUserId);
         return new Response<>(ad, String.format("Advertisement with id: %d was bought by user with id: %d", id, currentUserId), HttpStatus.OK);
     }
 
@@ -133,6 +139,7 @@ public class AdvertisementManagementController {
     public Response<Advertisement> observeAdvertisementWithId(@PathVariable Long id) {
         String email = resourceAccessAuthorizationService.extractCurrentUserFromAuth().getEmail();
         Advertisement ad = advertisementManagementService.observeAdvertisement(id, email);
+        logger.info("Request to observe advertisement with ID: " + id + " by user with email: " + email);
         return new Response<>(ad, String.format("Advertisement with id: %d was observed by user with id: %s", id, email), HttpStatus.OK);
     }
 
@@ -145,6 +152,7 @@ public class AdvertisementManagementController {
     public Response<Advertisement> unobserveAdvertisementWithId(@PathVariable Long id) {
         String email = resourceAccessAuthorizationService.extractCurrentUserFromAuth().getEmail();
         Advertisement ad = advertisementManagementService.unobserveAdvertisement(id, email);
+        logger.info("Request to unobserve advertisement with ID: " + id + " by user with email: " + email);
         return new Response<>(ad, String.format("Advertisement with id: %d was unobserved by user with id: %s", id, email), HttpStatus.OK);
     }
 
@@ -157,12 +165,14 @@ public class AdvertisementManagementController {
     @PutMapping ("/change-status/{id}/{status}")
     public Response<Advertisement> changeAdvertisementStatus(@PathVariable Long id, @PathVariable String status) {
         Advertisement ad = advertisementManagementService.changeAdvertisementStatus(id, status);
+        logger.info("Request to change status of advertisement with ID: " + id + " to: " + status);
         return new Response<>(ad, String.format("Advertisement with id: %d status was changed to: %s", id, status), HttpStatus.OK);
     }
 
     @GetMapping("/search")
     public Response<List<Advertisement>> requestSearchAdvertisements(@RequestParam Map<String, String> searchParams) {
         List<Advertisement> ads = advertisementManagementService.searchAdvertisements(searchParams);
+        logger.info("Request for advertisements with search parameters: " + searchParams);
         return new Response<>(ads, "Advertisements retrieved successfully", HttpStatus.OK);
     }
 }
