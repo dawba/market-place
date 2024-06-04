@@ -1,5 +1,6 @@
 package org.marketplace.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ public class User {
     @Size(min = 5, max = 20, message = "Login must be between 5 and 20 characters long")
     private String login;
     @NotNull
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)
