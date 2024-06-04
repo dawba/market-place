@@ -89,7 +89,7 @@ public class ResourceAccessAuthorizationService {
         }
     }
 
-    private User extractCurrentUserFromAuth(){
+    public User extractCurrentUserFromAuth(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         return userManagementRepository.findByEmail(username);

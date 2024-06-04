@@ -2,10 +2,10 @@ package org.marketplace.enums;
 
 public enum AdvertisementStatus {
     ACTIVE(0, "Active"),
-    INACTIVE(-1, "Inactive"),
-    DELETED(-2, "Deleted"),
-    EDITED(-3, "Edited"),
-    BUYER(Integer.MAX_VALUE, "Buyer");
+    INACTIVE(1, "Inactive"),
+    DELETED(2, "Deleted"),
+    EDITED(3, "Edited"),
+    BOUGHT(4, "Bought");
 
     private final int code;
     private final String description;

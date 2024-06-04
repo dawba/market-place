@@ -38,6 +38,7 @@ public class AdvertisementManagementController {
      */
     @PostMapping("/add")
     public Response<Advertisement> requestAddAdvertisement(@Valid @RequestBody Advertisement advertisement) {
+        logger.info("Adding advertisement: " + advertisement);
         Advertisement ad = advertisementManagementService.addAdvertisement(advertisement);
         return new Response<>(ad, "Advertisement added successfully", HttpStatus.CREATED);
     }
@@ -108,5 +109,53 @@ public class AdvertisementManagementController {
     public Response<List<Advertisement>> requestGetAdvertisementsByUser(@PathVariable Long id) {
         List<Advertisement> ads = advertisementManagementService.getAdvertisementsByUser(id);
         return new Response<>(ads, String.format("Advertisements retrieved successfully for ID: %d", id), HttpStatus.OK);
+    }
+
+    /**
+     * Buy an advertisement
+     * @param id id of the advertisement to be bought
+     * @return advertisement with HTTP status code
+     */
+    @PutMapping("/buy/{id}")
+    public Response<Advertisement> buyAdvertisementWithId(@PathVariable Long id) {
+        Long currentUserId = resourceAccessAuthorizationService.extractCurrentUserFromAuth().getId();
+        Advertisement ad = advertisementManagementService.buyAdvertisement(id, currentUserId);
+        return new Response<>(ad, String.format("Advertisement with id: %d was bought by user with id: %d", id, currentUserId), HttpStatus.OK);
+    }
+
+    /**
+     * Observe an advertisement for tracking changes
+     * @param id id of the advertisement to be observed
+     * @return advertisement with HTTP status code
+     */
+    @PutMapping("/observe/{id}")
+    public Response<Advertisement> observeAdvertisementWithId(@PathVariable Long id) {
+        String email = resourceAccessAuthorizationService.extractCurrentUserFromAuth().getEmail();
+        Advertisement ad = advertisementManagementService.observeAdvertisement(id, email);
+        return new Response<>(ad, String.format("Advertisement with id: %d was observed by user with id: %s", id, email), HttpStatus.OK);
+    }
+
+    /**
+     * Unobserve an advertisement
+     * @param id id of the advertisement to be unobserved
+     * @return advertisement with HTTP status code
+     */
+    @PutMapping("/unobserve/{id}")
+    public Response<Advertisement> unobserveAdvertisementWithId(@PathVariable Long id) {
+        String email = resourceAccessAuthorizationService.extractCurrentUserFromAuth().getEmail();
+        Advertisement ad = advertisementManagementService.unobserveAdvertisement(id, email);
+        return new Response<>(ad, String.format("Advertisement with id: %d was unobserved by user with id: %s", id, email), HttpStatus.OK);
+    }
+
+    /**
+     * Change the status of an advertisement
+     * @param id id of the advertisement
+     * @param status new status of the advertisement
+     * @return advertisement with HTTP status code
+     */
+    @PutMapping ("/change-status/{id}/{status}")
+    public Response<Advertisement> changeAdvertisementStatus(@PathVariable Long id, @PathVariable String status) {
+        Advertisement ad = advertisementManagementService.changeAdvertisementStatus(id, status);
+        return new Response<>(ad, String.format("Advertisement with id: %d status was changed to: %s", id, status), HttpStatus.OK);
     }
 }
