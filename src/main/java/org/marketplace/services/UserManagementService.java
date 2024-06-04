@@ -53,7 +53,6 @@ public class UserManagementService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         RegistrationToken registrationToken = new RegistrationToken(user);
-        logger.info("User object: " + user);
 
         Email mailMessage = new EmailBuilder()
                 .setTo(user.getEmail())

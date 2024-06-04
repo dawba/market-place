@@ -36,6 +36,7 @@ public class UserManagementController {
     @PostMapping("/register")
     public Response<User> addUser(@Valid @RequestBody User user) {
         User addedUser = userManagementService.registerNewUserAccount(user);
+        logger.info("Request to register user: " + user);
         return new Response<>(addedUser, "Email verification link was sent to your provided email address", HttpStatus.CREATED);
     }
 
@@ -47,6 +48,7 @@ public class UserManagementController {
     public Response<List<User>> getAllUsers()
     {
         List<User> users = userManagementService.getAllUsers();
+        logger.info("All users retrieved successfully");
         return new Response<>(users, "All users retrieved successfully", HttpStatus.OK);
     }
 
@@ -57,8 +59,8 @@ public class UserManagementController {
      */
     @GetMapping("/{id}")
     public Response<User> getUserById(@PathVariable Long id) {
-        logger.info("User ID: " + id);
         User user = userManagementService.getUserById(id);
+        logger.info("User retrieved successfully for ID: " + id + "\n" + user);
         return new Response<>(user, String.format("User retrieved successfully for ID: %d", id), HttpStatus.OK);
     }
 
@@ -70,8 +72,8 @@ public class UserManagementController {
     @PutMapping("/update")
     public Response<User> updateUser(@RequestBody @Valid User user) {
         resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.USER, user.getId());
-
         User updatedUser = userManagementService.updateUserAccount(user);
+        logger.info("User updated successfully: " + user);
         return new Response<>(updatedUser, "User updated successfully", HttpStatus.OK);
 
     }
@@ -86,6 +88,7 @@ public class UserManagementController {
     @DeleteMapping("/{id}")
     public Response<Long> deleteUserById(@PathVariable Long id) {
         userManagementService.deleteUserById(id);
+        logger.info("User deleted successfully for ID: " + id);
         return new Response<>(id, String.format("User deleted successfully for ID: %d", id), HttpStatus.OK);
     }
 
