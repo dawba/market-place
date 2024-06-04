@@ -151,4 +151,22 @@ public class Advertisement {
     public void setObservers(List<String> observers) {
         this.observers = observers;
     }
+
+    @Override
+    public String toString() {
+        return "Advertisement{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", category=" + category +
+                ", user=" + user +
+                ", price=" + price +
+                ", location='" + location + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", status=" + status +
+                ", buyerId=" + buyerId +
+                ", observers=" + observers +
+                '}';
+    }
 }
