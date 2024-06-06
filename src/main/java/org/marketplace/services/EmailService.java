@@ -41,7 +41,7 @@ public class EmailService {
             String errorMessage = e.getMessage() == null ? "Error sending email" : e.getMessage();
             throw new MailSendException(errorMessage);
         } catch(Exception e){
-            throw new RuntimeException("An unexpected error occurred while sending email" + e.getMessage(), e);
+            throw new RuntimeException("An unexpected error occurred while sending email " + e.getMessage(), e);
         }
     }
 
