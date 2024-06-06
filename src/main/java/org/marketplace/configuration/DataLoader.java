@@ -38,18 +38,21 @@ public class DataLoader implements ApplicationListener<ApplicationReadyEvent> {
 
     @Override
     public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
+        if (userRepository == null) {
+            return;
+        }
         if (userRepository.count() == 0) {
             createDefaultUser();
         }
 
         Category category;
-        if(categoryRepository.count() == 0){
+        if (categoryRepository.count() == 0) {
             category = createDefaultCategory();
         } else {
             category = categoryRepository.findAll().get(0);
         }
 
-        if(advertisementRepository.count() == 0){
+        if (advertisementRepository.count() == 0) {
             createDefaultAdvertisement(category);
         }
     }
