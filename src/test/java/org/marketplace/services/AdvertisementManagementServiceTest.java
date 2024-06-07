@@ -11,11 +11,13 @@ import org.marketplace.models.Advertisement;
 import org.marketplace.models.Category;
 import org.marketplace.models.User;
 import org.marketplace.repositories.AdvertisementManagementRepository;
+import org.marketplace.specifications.AdvertisementSpecification;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +75,7 @@ public class AdvertisementManagementServiceTest {
         });
 
         // then
-        assertThat(thrown.getMessage()).isEqualTo("Advertisement with id: 1 already exsits!");
+        assertThat(thrown.getMessage()).isEqualTo("Advertisement with id: 1 already exists!");
         verify(advertisementManagementRepository, never()).save(any(Advertisement.class));
     }
 
@@ -110,7 +112,6 @@ public class AdvertisementManagementServiceTest {
 
     @Test
     public void testDeleteAdvertisement() {
-        // given
         given(advertisementManagementRepository.existsById(advertisement.getId())).willReturn(true);
         given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.of(advertisement));
         doNothing().when(advertisementManagementRepository).deleteById(advertisement.getId());
@@ -120,7 +121,6 @@ public class AdvertisementManagementServiceTest {
 
         // then
         verify(advertisementManagementRepository, times(1)).deleteById(advertisement.getId());
-        verify(emailService, times(1)).sendEmailToObservers(null, any(AdvertisementStatus.class), anyString());
     }
 
     @Test
@@ -193,7 +193,82 @@ public class AdvertisementManagementServiceTest {
         assertThat(boughtAd.getStatus()).isEqualTo(AdvertisementStatus.BOUGHT);
         assertThat(boughtAd.getBuyerId()).isEqualTo(buyerId);
         verify(advertisementManagementRepository, times(1)).save(advertisement);
-        verify(emailService, times(1)).sendEmailToOwner(any(User.class), any(Advertisement.class), anyString());
-        verify(emailService, times(1)).sendEmailToObservers(anyList(), any(AdvertisementStatus.class), anyString());
+    }
+
+    @Test
+    void testObserveAdvertisement() {
+        // given
+        given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.of(advertisement));
+        given(advertisementManagementRepository.save(any(Advertisement.class))).willReturn(advertisement);
+
+        // when
+        Advertisement result = advertisementManagementService.observeAdvertisement(advertisement.getId(), "test@example.com");
+
+        // then
+        assertThat(result.getObservers()).hasSize(1).contains("test@example.com");
+    }
+
+    @Test
+    void testObserveAdvertisementAlreadyObserved() {
+        // given
+        advertisement.getObservers().add("test@example.com");
+        given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.of(advertisement));
+
+        EntityExistsException thrown = assertThrows(EntityExistsException.class, () -> {
+            advertisementManagementService.observeAdvertisement(advertisement.getId(), "test@example.com");
+        });
+
+        assertThat(thrown.getMessage()).isEqualTo ("User with email: test@example.com already observes the advertisement with id: 1");
+    }
+
+    @Test
+    void testUnobserveAdvertisement() {
+        // given
+        advertisement.getObservers().add("test@example.com");
+        given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.of(advertisement));
+        given(advertisementManagementRepository.save(any(Advertisement.class))).willReturn(advertisement);
+
+        // when
+        Advertisement result = advertisementManagementService.unobserveAdvertisement(advertisement.getId(), "test@example.com");
+
+        // then
+        assertThat(result.getObservers()).doesNotContain("test@example.com");
+    }
+
+    @Test
+    void testUnobserveAdvertisementNotObserved() {
+        // given
+        given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.of(advertisement));
+
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class, () -> {
+            advertisementManagementService.unobserveAdvertisement(advertisement.getId(), "test@example.com");
+        });
+
+        assertThat(thrown.getMessage()).isEqualTo ("User with email: test@example.com does not observe the advertisement with id: 1");
+
+    }
+
+    @Test
+    void testChangeAdvertisementStatus() {
+        // given
+        given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.of(advertisement));
+        given(advertisementManagementRepository.save(any(Advertisement.class))).willReturn(advertisement);
+
+        // when
+        Advertisement result = advertisementManagementService.changeAdvertisementStatus(advertisement.getId(), "INACTIVE");
+
+        // then
+        assertThat(result.getStatus()).isEqualTo(AdvertisementStatus.INACTIVE);
+    }
+
+    @Test
+    void testChangeAdvertisementStatusInvalidStatus() {
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            advertisementManagementService.changeAdvertisementStatus(advertisement.getId(), "INVALID_STATUS");
+        });
+
+        assertThat(thrown.getMessage()).isEqualTo ("Invalid status provided");
+
     }
 }

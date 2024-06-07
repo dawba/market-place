@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import org.marketplace.enums.AdvertisementStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -53,7 +54,19 @@ public class Advertisement {
         this.location = location;
         this.status = AdvertisementStatus.ACTIVE;
         this.buyerId = null;
-        this.observers = null;
+        this.observers = new ArrayList<>();
+    }
+
+    public Advertisement(String title, String description, Category category, User user, double price, String location) {
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.user=user;
+        this.price = price;
+        this.location = location;
+        this.status = AdvertisementStatus.ACTIVE;
+        this.buyerId = null;
+        this.observers = new ArrayList<>();
     }
     public Advertisement(){}
 

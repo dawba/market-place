@@ -32,7 +32,7 @@ public class CategoryManagementController {
     @PostMapping("/add")
     public Response<Category> requestAddCategory(@Valid @RequestBody Category category) {
         Category addedCategory = categoryManagementService.addCategory(category);
-        logger.info("Category added successfully: " + category);
+        logger.info("Category added successfully: " + addedCategory);
         return new Response<>(addedCategory, "Category added successfully", HttpStatus.CREATED);
     }
 

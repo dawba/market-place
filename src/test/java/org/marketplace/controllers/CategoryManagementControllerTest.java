@@ -9,6 +9,8 @@ import org.junit.runner.RunWith;
 import org.marketplace.configuration.DataLoader;
 import org.marketplace.models.Category;
 import org.marketplace.requests.Response;
+import org.marketplace.services.CategoryManagementService;
+import org.marketplace.util.TestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,26 +20,31 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles(value = "test")
+@Transactional
 public class CategoryManagementControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -45,6 +52,7 @@ public class CategoryManagementControllerTest {
     private JavaMailSender javaMailSender;
     @MockBean
     private DataLoader dataLoader;
+
     @Before
     public void setUp() {
 
@@ -58,25 +66,31 @@ public class CategoryManagementControllerTest {
     public void createCategory() throws Exception {
         String payload = "{\"name\":\"SampleCategory\"}";
 
-        mockMvc.perform(post("/api/categories/add")
+        MvcResult result = mockMvc.perform(post("/api/categories/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON));
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
+
+        Long id = TestUtil.extractCategoryIdFromMvcResult (result);
+        assertNotNull(id, "Category ID should not be null");
     }
 
     @Test
     public void getCategoryById() throws Exception {
         // Create a category
         String createPayload = "{\"name\":\"SampleCategory\"}";
-        mockMvc.perform(post("/api/categories/add")
+        MvcResult result = mockMvc.perform(post("/api/categories/add")
                         .contentType(APPLICATION_JSON)
                         .content(createPayload))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON));
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
 
+        Long id = TestUtil.extractCategoryIdFromMvcResult (result);
         // Fetch the created category
-        mockMvc.perform(get("/api/categories/1"))
+        mockMvc.perform(get(String.format( "/api/categories/%d",id)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }
@@ -120,15 +134,17 @@ public class CategoryManagementControllerTest {
     @Test
     public void deleteCategory_positive() throws Exception {
         // Create a category
-        String createPayload = "{\"name\":\"SampleCategory\"}";
-        mockMvc.perform(post("/api/categories/add")
+        String createPayload = "{\"id\":1, \"name\":\"SampleCategory\"}";
+        MvcResult result = mockMvc.perform(post("/api/categories/add")
                         .contentType(APPLICATION_JSON)
                         .content(createPayload))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON));
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
 
+        Long id = TestUtil.extractCategoryIdFromMvcResult(result);
         // Delete the created category
-        mockMvc.perform(get("/api/categories/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete(String.format( "/api/categories/%d",id)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }
@@ -136,7 +152,7 @@ public class CategoryManagementControllerTest {
     @Test
     public void deleteCategory_negative() throws Exception {
         // Delete a category that does not exist
-        mockMvc.perform(get("/api/categories/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/categories/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }

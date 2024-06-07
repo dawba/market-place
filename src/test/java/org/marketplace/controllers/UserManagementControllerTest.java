@@ -1,84 +1,209 @@
 package org.marketplace.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.marketplace.configuration.DataLoader;
+import org.marketplace.configuration.JwtRequestFilter;
+import org.marketplace.configuration.UserPassRequestFilter;
 import org.marketplace.enums.UserRole;
+import org.marketplace.models.Category;
+import org.marketplace.models.RegistrationToken;
 import org.marketplace.models.User;
+import org.marketplace.requests.Response;
+import org.marketplace.services.ResourceAccessAuthorizationService;
 import org.marketplace.services.UserManagementService;
+import org.marketplace.util.TestUtil;
 import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.is;
+import static junit.framework.TestCase.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.marketplace.enums.AccessStatus.ACCESS_GRANTED;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-@WebMvcTest(UserManagementController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@ExtendWith(MockitoExtension.class)
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles(value = "test")
+@Transactional
 class UserManagementControllerTest {
 
-    MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
     @MockBean
-    private UserManagementService userManagementService;
+    private JavaMailSender javaMailSender;
 
-    private User user;
+    @MockBean
+    private DataLoader dataLoader;
+
+    @MockBean
+    ResourceAccessAuthorizationService resourceAccessAuthorizationService;
+
+    MvcResult mvcResultAddUser;
 
     @BeforeEach
-    void setUp() {
-        user = new User(null, "user2", "password", UserRole.USER, "user2@gmail.com", "123456789");
+    void setUp() throws Exception {
+        given(resourceAccessAuthorizationService.authorizeUserAccess(any(),anyLong())).willReturn(ACCESS_GRANTED);
+
+       String payload = "{\"login\":\"user2\", " +
+                "\"password\":\"password\", " +
+                "\"role\":\"USER\", " +
+                "\"email\":\"user2@gmail.com\", " +
+                "\"phoneNumber\":\"123456789\"}";
+
+        //create new User
+        mvcResultAddUser = mockMvc.perform(post("/api/user/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
+
+        Long userId = TestUtil.extractUserIdFromMvcResult(mvcResultAddUser);
+        assertNotNull(userId, "User ID should not be null");
+
     }
 
     @Test
     void addUser() throws Exception {
-        given(userManagementService.registerNewUserAccount(ArgumentMatchers.any())).willAnswer(invocation -> invocation.getArgument(0));
+        String payload = "{\"login\":\"user3\", " +
+                "\"password\":\"password\", " +
+                "\"role\":\"USER\", " +
+                "\"email\":\"user3@gmail.com\", " +
+                "\"phoneNumber\":\"123456789\"}";
 
-        ResultActions response = mockMvc.perform(post("/api/user/register")
-                .contentType(APPLICATION_JSON)
-                .content(asJsonString(user)));
+        //create new User
+        MvcResult result = mockMvc.perform(post("/api/user/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
 
-        response.andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists());
+        Long userId = TestUtil.extractUserIdFromMvcResult(result);
+        assertNotNull(userId, "User ID should not be null");;
     }
 
     @Test
-    void getAllUsers() {
+    public void getAllUsers_afterAddition() throws Exception {
+        // Create user payload
+        String userPayload2 = "{\"login\":\"user3\", " +
+                "\"password\":\"password\", " +
+                "\"role\":\"USER\", " +
+                "\"email\":\"user3@gmail.com\", " +
+                "\"phoneNumber\":\"123456789\"}";
+        String userPayload3 = "{\"login\":\"user4\", " +
+                "\"password\":\"password\", " +
+                "\"role\":\"USER\", " +
+                "\"email\":\"user4@gmail.com\", " +
+                "\"phoneNumber\":\"123456789\"}";
+
+        // Create multiple users
+        mockMvc.perform(post("/api/user/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(userPayload2))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON));
+
+        mockMvc.perform(post("/api/user/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(userPayload3))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON));
+
+        // Fetch all users
+        MvcResult result = mockMvc.perform(get("/api/user/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        Response<List<User>> response = mapper.readValue(responseBody, new TypeReference<Response<List<User>>>() {});
+
+        // Assert that the number of users in the response body is 3
+        assertEquals(3, response.getData().size());
     }
 
     @Test
-    void getUserById() {
+    void getUserById() throws Exception {
+        Long id = TestUtil.extractUserIdFromMvcResult(mvcResultAddUser);
+        // Fetch the created user
+        mockMvc.perform(get(String.format( "/api/user/%d",id)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON));
     }
 
     @Test
-    void updateUser() {
+    void updateUser() throws Exception {
+        Long id = TestUtil.extractUserIdFromMvcResult(mvcResultAddUser);
+        String updatePayload = String.format(
+                "{" +
+                        "\"id\":%d, " +
+                        "\"login\":\"user2\", " +
+                        "\"password\":\"password\", " +
+                        "\"role\":\"USER\", " +
+                        "\"email\":\"user2@gmail.com\", " +
+                        "\"phoneNumber\":\"111111111\"" +
+                        "}", id);
+
+        MvcResult result = mockMvc.perform(put("/api/user/update")
+                        .contentType(APPLICATION_JSON)
+                        .content(updatePayload))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
+
+        // Parse the response body into a Response object
+        String responseBody = result.getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        Response<User> response = mapper.readValue(responseBody, new TypeReference<Response<User>>() {});
+
+        assertEquals("111111111", response.getData().getPhoneNumber());
     }
 
     @Test
-    void deleteUserById() {
+    void deleteUserById() throws Exception {
+        Long id = TestUtil.extractUserIdFromMvcResult(mvcResultAddUser);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(String.format( "/api/user/%d",id)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON));
     }
-
-    @Test
-    void confirmUserAccount() {
-    }
-
-    public static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
 }

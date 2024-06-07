@@ -6,14 +6,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.marketplace.configuration.DataLoader;
 import org.marketplace.models.Category;
 import org.marketplace.requests.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,9 +36,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles(value = "test")
+@Transactional
 public class AdvertisementImageManagementControllerTest {
     @Autowired
     private MockMvc mockMvc;
+    @MockBean
+    private JavaMailSender javaMailSender;
+    @MockBean
+    private DataLoader dataLoader;
 
     @Before
     public void setUp() throws Exception {
