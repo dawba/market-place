@@ -1,5 +1,6 @@
 package org.marketplace.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -43,6 +44,8 @@ public class Advertisement {
     @CollectionTable(name = "observers", joinColumns = @JoinColumn(name = "advertisement_id"))
     @Column(name = "observer")
     private List<String> observers;
+    @JsonIgnore
+    private Long owner;
 
     public Advertisement(Long id,String title, String description, Category category, User user, double price, String location) {
         this.id=id;

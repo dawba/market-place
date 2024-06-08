@@ -2,6 +2,7 @@ package org.marketplace.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.marketplace.models.Advertisement;
 import org.marketplace.models.User;
@@ -16,7 +17,9 @@ public class TestUtil {
     public static Long extractAdvertisementIdFromMvcResult(MvcResult result) {
         try {
             String responseBody = result.getResponse().getContentAsString();
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = JsonMapper.builder()
+                    .findAndAddModules()
+                    .build();
             Response<Advertisement> response = mapper.readValue(responseBody, new TypeReference<Response<Advertisement>>() {});
             return response.getData().getId();
         } catch (Exception e) {

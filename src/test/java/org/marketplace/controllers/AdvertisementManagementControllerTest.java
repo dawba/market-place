@@ -2,6 +2,8 @@ package org.marketplace.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
@@ -100,7 +102,9 @@ public class AdvertisementManagementControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
         String responseBody = mvcResultAddAd.getResponse().getContentAsString();
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder()
+                .findAndAddModules()
+                .build();
         Response<Advertisement> response = mapper.readValue(responseBody, new TypeReference<Response<Advertisement>>() {});
 
         Long advertisementId = TestUtil.extractAdvertisementIdFromMvcResult (mvcResultAddAd);
