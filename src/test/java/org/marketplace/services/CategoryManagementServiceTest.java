@@ -5,21 +5,24 @@ import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.marketplace.models.Category;
 import org.marketplace.repositories.CategoryManagementRepository;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryManagementServiceTest {
@@ -32,50 +35,53 @@ class CategoryManagementServiceTest {
 
     private Category category;
 
+    private static Stream<Arguments> provideInvalidCategoryNames() {
+        return Stream.of(
+                Arguments.of(null, "Category name cannot be null"),
+                Arguments.of("A", "Category name must be between 2 and 20 characters long"),
+                Arguments.of("A".repeat(21), "Category name must be between 2 and 20 characters long")
+        );
+    }
+
+    private static Stream<Arguments> provideValidCategoryNames() {
+        return Stream.of(
+                Arguments.of("Aa"),
+                Arguments.of("A".repeat(20))
+        );
+    }
+
     @BeforeEach
     void setUp() {
         category = new Category(1L, "newCategory");
     }
 
-    @Test
-    void testAddCategory() {
+    @ParameterizedTest(name = "{index} => name={0}, expectedMessage={1}")
+    @MethodSource("provideInvalidCategoryNames")
+    public void testAddCategoryWithInvalidNames(String name, String expectedMessage) {
+        Category category = new Category();
+        category.setName(name);
+
+        given(categoryManagementRepository.save(category))
+                .willThrow(new ConstraintViolationException(expectedMessage, null));
+
+        ConstraintViolationException thrown = assertThrows(ConstraintViolationException.class, () -> {
+            categoryManagementService.addCategory(category);
+        });
+
+        assertThat(thrown.getMessage()).isEqualTo(expectedMessage);
+    }
+
+    @ParameterizedTest(name = "{index} => name={0}}")
+    @MethodSource("provideValidCategoryNames")
+    void testAddCategoryWithValidNames(String name) {
+        Category category = new Category();
+        category.setName(name);
         given(categoryManagementRepository.save(category)).willReturn(category);
 
         Category addedCategory = categoryManagementService.addCategory(category);
 
         assertThat(addedCategory).isNotNull();
-        assertThat(addedCategory.getId()).isEqualTo(1L);
-        assertThat(addedCategory.getName()).isEqualTo("newCategory");
-    }
-
-    @Test
-    public void testAddCategoryWithNullName() {
-        Category invalidCategory = new Category();
-        invalidCategory.setName(null);
-
-        given(categoryManagementRepository.save(invalidCategory)).willThrow(new ConstraintViolationException("Category name cannot be null", null));
-
-        ConstraintViolationException thrown = assertThrows(ConstraintViolationException.class, () -> {
-            categoryManagementService.addCategory(invalidCategory);
-        });
-
-        assertThat(thrown.getMessage()).isEqualTo("Category name cannot be null");
-    }
-
-    @Test
-    public void testAddCategoryWithShortName() {
-        // given
-        Category invalidCategory = new Category();
-        invalidCategory.setName("A");
-        given(categoryManagementRepository.save(invalidCategory)).willThrow(new ConstraintViolationException("Category name must be between 2 and 20 characters long", null));
-
-        // when
-        ConstraintViolationException thrown = assertThrows(ConstraintViolationException.class, () -> {
-            categoryManagementService.addCategory(invalidCategory);
-        });
-
-        // then
-        assertThat(thrown.getMessage()).isEqualTo("Category name must be between 2 and 20 characters long");
+        assertThat(addedCategory.getName()).isEqualTo(name);
     }
 
     @Test
@@ -88,7 +94,7 @@ class CategoryManagementServiceTest {
 
         assertThat(categoryList).isNotNull();
         assertThat(categoryList.size()).isGreaterThan(1);
-        assertThat(categoryList).contains(category,category1);
+        assertThat(categoryList).contains(category, category1);
     }
 
     @Test

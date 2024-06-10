@@ -5,18 +5,15 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.marketplace.builders.EmailBuilder;
 import org.marketplace.enums.UserRole;
 import org.marketplace.models.Email;
 import org.marketplace.models.RegistrationToken;
 import org.marketplace.models.User;
 import org.marketplace.repositories.RegistrationTokenManagementRepository;
 import org.marketplace.repositories.UserManagementRepository;
-import org.marketplace.requests.DuplicateEntryException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -69,6 +66,7 @@ public class UserManagementServiceTest {
 
         // then
         assertThat(registeredUser).isNotNull();
+        assertThat(registeredUser).isEqualTo(user);
         verify(emailService, times(1)).sendEmail(any(Email.class));
         verify(userManagementRepository, times(1)).save(user);
         verify(registrationTokenManagementRepository, times(1)).save(any(RegistrationToken.class));

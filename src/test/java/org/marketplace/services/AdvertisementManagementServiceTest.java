@@ -11,13 +11,10 @@ import org.marketplace.models.Advertisement;
 import org.marketplace.models.Category;
 import org.marketplace.models.User;
 import org.marketplace.repositories.AdvertisementManagementRepository;
-import org.marketplace.specifications.AdvertisementSpecification;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -218,7 +215,7 @@ public class AdvertisementManagementServiceTest {
             advertisementManagementService.observeAdvertisement(advertisement.getId(), "test@example.com");
         });
 
-        assertThat(thrown.getMessage()).isEqualTo ("User with email: test@example.com already observes the advertisement with id: 1");
+        assertThat(thrown.getMessage()).isEqualTo("User with email: test@example.com already observes the advertisement with id: 1");
     }
 
     @Test
@@ -244,7 +241,7 @@ public class AdvertisementManagementServiceTest {
             advertisementManagementService.unobserveAdvertisement(advertisement.getId(), "test@example.com");
         });
 
-        assertThat(thrown.getMessage()).isEqualTo ("User with email: test@example.com does not observe the advertisement with id: 1");
+        assertThat(thrown.getMessage()).isEqualTo("User with email: test@example.com does not observe the advertisement with id: 1");
 
     }
 
@@ -268,7 +265,7 @@ public class AdvertisementManagementServiceTest {
             advertisementManagementService.changeAdvertisementStatus(advertisement.getId(), "INVALID_STATUS");
         });
 
-        assertThat(thrown.getMessage()).isEqualTo ("Invalid status provided");
+        assertThat(thrown.getMessage()).isEqualTo("Invalid status provided");
 
     }
 }

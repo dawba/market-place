@@ -3,7 +3,9 @@ package org.marketplace.services;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.marketplace.cache.TokenCache;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,30 +13,22 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
-
 import org.springframework.test.web.servlet.MockMvc;
-import static org.mockito.Mockito.*;
-
-import org.mockito.Mock;
-
-import org.marketplace.cache.TokenCache;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class TokenServiceTest {
+    private final String username = "testUser";
     @Autowired
     private MockMvc mockMvc;
-
     @Mock
     private TokenCache tokenCache;
-
     @InjectMocks
     private TokenService tokenService;
-
-    private final String username = "testUser";
 
     @Before
     public void setUp() {
@@ -99,7 +93,6 @@ public class TokenServiceTest {
         when(tokenCache.getToken(username)).thenReturn(null);
         tokenService.invalidateToken(invalidToken);
     }
-
 
 
     @Test
