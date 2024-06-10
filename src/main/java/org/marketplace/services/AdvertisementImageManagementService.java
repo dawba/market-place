@@ -17,6 +17,9 @@ public class AdvertisementImageManagementService {
     }
 
     public AdvertisementImage addImage(AdvertisementImage advertisementImage) {
+        Long advertisementImageId = advertisementImage.getId();
+        if (advertisementImageId == null)
+            return advertisementImageManagementRepository.save(advertisementImage);
         try {
             getAdvertisementImageById(advertisementImage.getId());
             throw new EntityExistsException(String.format("Advertisement image with id: %d already exists!", advertisementImage.getId()));
