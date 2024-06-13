@@ -1,6 +1,7 @@
 package org.marketplace.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import org.marketplace.enums.UserRole;
 
 @Entity
+@Table(name="_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +20,7 @@ public class User {
     @Size(min = 5, max = 20, message = "Login must be between 5 and 20 characters long")
     private String login;
     @NotNull
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -33,6 +35,9 @@ public class User {
 
     @Column(name = "is_verified")
     private boolean isVerified;
+
+    @JsonProperty
+    private boolean admin;
 
     public User(String login, String password, String email, String phoneNumber) {
         this.login = login;

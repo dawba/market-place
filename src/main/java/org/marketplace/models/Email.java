@@ -13,6 +13,9 @@ public class Email extends SimpleMailMessage {
         this.content = content;
     }
 
+    public Email() {
+    }
+
     @Override
     public String getText() {
         return this.content;

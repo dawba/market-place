@@ -38,7 +38,7 @@ public class AdvertisementImage {
         return filepath;
     }
 
-    public void setFilepath(String filename) {
+    public void setFilepath(String filepath) {
         this.filepath = filepath;
     }
 

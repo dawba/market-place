@@ -28,9 +28,12 @@ public class AdvertisementManagementService {
     }
 
     public Advertisement addAdvertisement(Advertisement advertisement) {
+        Long advertisementId = advertisement.getId();
+        if (advertisementId == null)
+            return advertisementManagementRepository.save(advertisement);
         try {
-            getAdvertisementById(advertisement.getId());
-            throw new EntityExistsException(String.format("Advertisement with id: %d already exsits!", advertisement.getId()));
+            getAdvertisementById(advertisementId);
+            throw new EntityExistsException(String.format("Advertisement with id: %d already exists!", advertisementId));
         } catch (EntityNotFoundException e) {
             return advertisementManagementRepository.save(advertisement);
         }
