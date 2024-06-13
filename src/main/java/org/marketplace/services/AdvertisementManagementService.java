@@ -5,10 +5,12 @@ import jakarta.persistence.EntityNotFoundException;
 import org.marketplace.enums.AdvertisementStatus;
 import org.marketplace.models.Advertisement;
 import org.marketplace.repositories.AdvertisementManagementRepository;
+import org.marketplace.repositories.UserManagementRepository;
+import org.marketplace.requests.UserNotFoundException;
 import org.marketplace.specifications.AdvertisementSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -17,18 +19,24 @@ import java.util.Optional;
 @Service
 public class AdvertisementManagementService {
     private final AdvertisementManagementRepository advertisementManagementRepository;
-
+    private final UserManagementRepository userManagementRepository;
     @Autowired
     EmailService emailService;
 
 
-    public AdvertisementManagementService(AdvertisementManagementRepository advertisementManagementRepository, EmailService emailService) {
+    public AdvertisementManagementService(AdvertisementManagementRepository advertisementManagementRepository, EmailService emailService, UserManagementRepository userManagementRepository) {
         this.advertisementManagementRepository = advertisementManagementRepository;
         this.emailService = emailService;
+        this.userManagementRepository = userManagementRepository;
     }
 
     public Advertisement addAdvertisement(Advertisement advertisement) {
         Long advertisementId = advertisement.getId();
+        if (advertisement.getUser() == null)
+            throw new UserNotFoundException("User can not be null");
+        Long userId = advertisement.getUser().getId();
+        if (!userManagementRepository.existsById(userId))
+            throw new UserNotFoundException(String.format("User with id: %d not exists!", userId));
         if (advertisementId == null)
             return advertisementManagementRepository.save(advertisement);
         try {
@@ -42,7 +50,7 @@ public class AdvertisementManagementService {
     public Advertisement updateAdvertisement(Advertisement advertisement) {
         try {
             Advertisement ad = getAdvertisementById(advertisement.getId());
-            if(ad.getPrice() != advertisement.getPrice()){
+            if (ad.getPrice() != advertisement.getPrice()) {
                 emailService.sendEmailToObservers(ad.getObservers(), advertisement.getPrice(), advertisement.getTitle());
             }
 
@@ -83,7 +91,7 @@ public class AdvertisementManagementService {
         return advertisementManagementRepository.findByCategory_Id(id);
     }
 
-    public Advertisement buyAdvertisement(Long id, Long currentUserId){
+    public Advertisement buyAdvertisement(Long id, Long currentUserId) {
         Advertisement ad = getAdvertisementById(id);
         ad.setStatus(AdvertisementStatus.BOUGHT);
         ad.setBuyerId(currentUserId);
@@ -94,15 +102,15 @@ public class AdvertisementManagementService {
         return advertisementManagementRepository.save(ad);
     }
 
-    public Advertisement observeAdvertisement(Long id, String email){
+    public Advertisement observeAdvertisement(Long id, String email) {
         Advertisement ad = getAdvertisementById(id);
-        if(ad.getObservers() == null){
+        if (ad.getObservers() == null) {
             ad.setObservers(List.of());
         }
 
         List<String> currentObservers = ad.getObservers();
 
-        if(currentObservers.contains(email)){
+        if (currentObservers.contains(email)) {
             throw new EntityExistsException(String.format("User with email: %s already observes the advertisement with id: %d", email, id));
         }
 
@@ -110,11 +118,11 @@ public class AdvertisementManagementService {
         return advertisementManagementRepository.save(ad);
     }
 
-    public Advertisement unobserveAdvertisement(Long id, String email){
+    public Advertisement unobserveAdvertisement(Long id, String email) {
         Advertisement ad = getAdvertisementById(id);
         List<String> currentObservers = ad.getObservers();
 
-        if(!currentObservers.contains(email)){
+        if (!currentObservers.contains(email)) {
             throw new EntityNotFoundException(String.format("User with email: %s does not observe the advertisement with id: %d", email, id));
         }
 
@@ -122,8 +130,8 @@ public class AdvertisementManagementService {
         return advertisementManagementRepository.save(ad);
     }
 
-    public Advertisement changeAdvertisementStatus(Long id, String status){
-        if(status.isEmpty() || (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("BOUGHT") && !status.equals("DELETED"))){
+    public Advertisement changeAdvertisementStatus(Long id, String status) {
+        if (status.isEmpty() || (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("BOUGHT") && !status.equals("DELETED"))) {
             throw new IllegalArgumentException("Invalid status provided");
         }
 
@@ -136,7 +144,7 @@ public class AdvertisementManagementService {
     public List<Advertisement> searchAdvertisements(Map<String, String> searchParams) {
         Specification<Advertisement> specification = Specification.where(null);
 
-        for(Map.Entry<String, String> searchEntry: searchParams.entrySet()){
+        for (Map.Entry<String, String> searchEntry : searchParams.entrySet()) {
             specification = specification.and(new AdvertisementSpecification(searchEntry.getKey(), ":", searchEntry.getValue()));
         }
 

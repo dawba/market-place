@@ -1,60 +1,39 @@
 package org.marketplace.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.marketplace.configuration.DataLoader;
-import org.marketplace.configuration.JwtRequestFilter;
-import org.marketplace.configuration.UserPassRequestFilter;
-import org.marketplace.enums.UserRole;
-import org.marketplace.models.Category;
-import org.marketplace.models.RegistrationToken;
 import org.marketplace.models.User;
 import org.marketplace.requests.Response;
 import org.marketplace.services.ResourceAccessAuthorizationService;
-import org.marketplace.services.UserManagementService;
 import org.marketplace.util.TestUtil;
-import org.mockito.ArgumentMatcher;
-import org.mockito.ArgumentMatchers;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.hamcrest.Matchers.is;
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.marketplace.enums.AccessStatus.ACCESS_GRANTED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -63,25 +42,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class UserManagementControllerTest {
 
+    @MockBean
+    ResourceAccessAuthorizationService resourceAccessAuthorizationService;
+    MvcResult mvcResultAddUser;
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private JavaMailSender javaMailSender;
-
     @MockBean
     private DataLoader dataLoader;
 
-    @MockBean
-    ResourceAccessAuthorizationService resourceAccessAuthorizationService;
-
-    MvcResult mvcResultAddUser;
-
     @BeforeEach
     void setUp() throws Exception {
-        given(resourceAccessAuthorizationService.authorizeUserAccess(any(),anyLong())).willReturn(ACCESS_GRANTED);
+        given(resourceAccessAuthorizationService.authorizeUserAccess(any(), anyLong())).willReturn(ACCESS_GRANTED);
 
-       String payload = "{\"login\":\"user2\", " +
+        String payload = "{\"login\":\"user2\", " +
                 "\"password\":\"password\", " +
                 "\"role\":\"USER\", " +
                 "\"email\":\"user2@gmail.com\", " +
@@ -91,7 +66,7 @@ class UserManagementControllerTest {
         mvcResultAddUser = mockMvc.perform(post("/api/user/register")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
@@ -112,12 +87,12 @@ class UserManagementControllerTest {
         MvcResult result = mockMvc.perform(post("/api/user/register")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
         Long userId = TestUtil.extractUserIdFromMvcResult(result);
-        assertNotNull(userId, "User ID should not be null");;
+        assertNotNull(userId, "User ID should not be null");
     }
 
     @Test
@@ -138,13 +113,13 @@ class UserManagementControllerTest {
         mockMvc.perform(post("/api/user/register")
                         .contentType(APPLICATION_JSON)
                         .content(userPayload2))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON));
 
         mockMvc.perform(post("/api/user/register")
                         .contentType(APPLICATION_JSON)
                         .content(userPayload3))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON));
 
         // Fetch all users
@@ -155,7 +130,8 @@ class UserManagementControllerTest {
 
         String responseBody = result.getResponse().getContentAsString();
         ObjectMapper mapper = new ObjectMapper();
-        Response<List<User>> response = mapper.readValue(responseBody, new TypeReference<Response<List<User>>>() {});
+        Response<List<User>> response = mapper.readValue(responseBody, new TypeReference<Response<List<User>>>() {
+        });
 
         // Assert that the number of users in the response body is 3
         assertEquals(3, response.getData().size());
@@ -165,7 +141,7 @@ class UserManagementControllerTest {
     void getUserById() throws Exception {
         Long id = TestUtil.extractUserIdFromMvcResult(mvcResultAddUser);
         // Fetch the created user
-        mockMvc.perform(get(String.format( "/api/user/%d",id)))
+        mockMvc.perform(get(String.format("/api/user/%d", id)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }
@@ -193,7 +169,8 @@ class UserManagementControllerTest {
         // Parse the response body into a Response object
         String responseBody = result.getResponse().getContentAsString();
         ObjectMapper mapper = new ObjectMapper();
-        Response<User> response = mapper.readValue(responseBody, new TypeReference<Response<User>>() {});
+        Response<User> response = mapper.readValue(responseBody, new TypeReference<Response<User>>() {
+        });
 
         assertEquals("111111111", response.getData().getPhoneNumber());
     }
@@ -202,7 +179,7 @@ class UserManagementControllerTest {
     void deleteUserById() throws Exception {
         Long id = TestUtil.extractUserIdFromMvcResult(mvcResultAddUser);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(String.format( "/api/user/%d",id)))
+        mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/user/%d", id)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }

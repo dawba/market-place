@@ -1,13 +1,16 @@
 package org.marketplace.controllers;
 
+import jakarta.persistence.EntityExistsException;
 import org.marketplace.enums.ResourceType;
 import org.marketplace.models.AdvertisementImage;
+import org.marketplace.requests.AdvertisementNotFoundException;
 import org.marketplace.requests.Response;
 import org.marketplace.services.AdvertisementImageManagementService;
 import org.marketplace.services.ResourceAccessAuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,62 +30,80 @@ public class AdvertisementImageManagementController {
 
     /**
      * Add a new advertisement image
+     *
      * @param advertisementImage advertisement image to be added
      * @return added advertisement image
      */
     @PostMapping("/add")
-    public Response<AdvertisementImage> requestAddImage(@RequestBody AdvertisementImage advertisementImage) {
-        AdvertisementImage image = this.advertisementImageManagementService.addImage(advertisementImage);
-        logger.info(String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()));
-        return new Response<>(image, String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()), HttpStatus.CREATED);
+    public ResponseEntity<Response> requestAddImage(@RequestBody AdvertisementImage advertisementImage) {
+        try {
+            AdvertisementImage image = this.advertisementImageManagementService.addImage(advertisementImage);
+            logger.info(String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()));
+            Response response = new Response<>(image, String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()), HttpStatus.CREATED);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (AdvertisementNotFoundException ex) {
+            Response response = new Response<>(null, "Advertisement not found: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (EntityExistsException ex) {
+            Response response = new Response<>(null, "Advertisement image already exists: " + ex.getMessage(), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
     }
 
     /**
      * Get an advertisement image by id
+     *
      * @param id id of the advertisement image to be retrieved
      * @return advertisement image with HTTP status code
      */
     @GetMapping("/{id}")
-    public Response<AdvertisementImage> requestGetAdvertisementImageById(@PathVariable Long id) {
+    public ResponseEntity<Response> requestGetAdvertisementImageById(@PathVariable Long id) {
         AdvertisementImage image = this.advertisementImageManagementService.getAdvertisementImageById(id);
         logger.info(String.format("Advertisement image retrieved successfully for ID: %d", id));
-        return new Response<>(image, String.format("Advertisement image retrieved successfully for ID: %d", id), HttpStatus.OK);
+        Response response = new Response<>(image, String.format("Advertisement image retrieved successfully for ID: %d", id), HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
      * Update an advertisement image
+     *
      * @param advertisementImage advertisement image to be updated
      * @return updated advertisement image with HTTP status code
      */
     @PutMapping("/update")
-    public Response<AdvertisementImage> requestUpdateAdvertisementImage(@RequestBody AdvertisementImage advertisementImage) {
+    public ResponseEntity<Response> requestUpdateAdvertisementImage(@RequestBody AdvertisementImage advertisementImage) {
         resourceAccessAuthorizationService.authorizeUserAccessFromRequestBodyOrThrow(ResourceType.ADVERTISEMENT_IMAGE, advertisementImage.getId());
         AdvertisementImage image = this.advertisementImageManagementService.updateAdvertisementImage(advertisementImage);
         logger.info(String.format("Advertisement image updated successfully for ID: %d", advertisementImage.getId()));
-        return new Response<>(image, String.format("Advertisement image updated successfully for ID: %d", advertisementImage.getId()), HttpStatus.OK);
+        Response response = new Response<>(image, String.format("Advertisement image updated successfully for ID: %d", advertisementImage.getId()), HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
      * Delete an advertisement image
+     *
      * @param id id of the advertisement image to be deleted
      */
     @PreAuthorize("@resourceAccessAuthorizationService.authorizeUserAccess('ResourceType.AdvertisementImage', #id).equals(T(org.marketplace.enums.AccessStatus).ACCESS_GRANTED)")
     @DeleteMapping("/{id}")
-    public Response<Long> requestDeleteAdvertisementImage(@PathVariable Long id) {
+    public ResponseEntity<Response> requestDeleteAdvertisementImage(@PathVariable Long id) {
         this.advertisementImageManagementService.deleteAdvertisementImage(id);
         logger.info(String.format("Advertisement image deleted successfully for ID: %d", id));
-        return new Response<>(id, String.format("Advertisement image deleted successfully for ID: %d", id), HttpStatus.OK);
+        Response response = new Response<>(id, String.format("Advertisement image deleted successfully for ID: %d", id), HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
      * Get all advertisement images for an advertisement
+     *
      * @param id id of the advertisement
      * @return list of advertisement images with HTTP status code
      */
     @GetMapping("/advertisement/{id}")
-    public Response<List<AdvertisementImage>> requestGetAllAdvertisementImages(@PathVariable Long id) {
+    public ResponseEntity<Response> requestGetAllAdvertisementImages(@PathVariable Long id) {
         List<AdvertisementImage> imageList = this.advertisementImageManagementService.getAllAdvertisementImages(id);
         logger.info(String.format("Advertisement images retrieved successfully for advertisement ID: %d", id));
-        return new Response<>(imageList, String.format("Advertisement images retrieved successfully for advertisement ID: %d", id), HttpStatus.OK);
+        Response response = new Response<>(imageList, String.format("Advertisement images retrieved successfully for advertisement ID: %d", id), HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.marketplace.models.Advertisement;
 import org.marketplace.models.AdvertisementImage;
 import org.marketplace.repositories.AdvertisementImageManagementRepository;
+import org.marketplace.repositories.AdvertisementManagementRepository;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +28,9 @@ class AdvertisementImageManagementServiceTest {
     @Mock
     private AdvertisementImageManagementRepository advertisementImageManagementRepository;
 
+    @Mock
+    private AdvertisementManagementRepository advertisementManagementRepository;
+
     @InjectMocks
     private AdvertisementImageManagementService advertisementImageManagementService;
 
@@ -43,6 +47,7 @@ class AdvertisementImageManagementServiceTest {
     @Test
     void testAddImage_ShouldAddImage() {
         // given
+        given(advertisementManagementRepository.existsById(advertisement.getId())).willReturn(true);
         given(advertisementImageManagementRepository.findById(advertisementImage.getId())).willReturn(Optional.empty());
         given(advertisementImageManagementRepository.save(any(AdvertisementImage.class))).willReturn(advertisementImage);
 
@@ -58,6 +63,7 @@ class AdvertisementImageManagementServiceTest {
     @Test
     void testAddImage_ShouldThrowExceptionWhenImageExists() {
         // given
+        given(advertisementManagementRepository.existsById(advertisement.getId())).willReturn(true);
         given(advertisementImageManagementRepository.findById(advertisementImage.getId())).willReturn(Optional.of(advertisementImage));
 
         // when

@@ -57,7 +57,9 @@ public class TestUtil {
     public static Long extractAdvertisementImageIdFromMvcResult(MvcResult result) {
         try {
             String responseBody = result.getResponse().getContentAsString();
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = JsonMapper.builder()
+                    .findAndAddModules()
+                    .build();
             Response<AdvertisementImage> response = mapper.readValue(responseBody, new TypeReference<Response<AdvertisementImage>>() {
             });
             return response.getData().getId();
