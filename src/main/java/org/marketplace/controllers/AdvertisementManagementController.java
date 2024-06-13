@@ -1,7 +1,9 @@
 package org.marketplace.controllers;
 
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import org.marketplace.enums.ResourceType;
 import org.marketplace.models.Advertisement;
 import org.marketplace.requests.Response;
@@ -46,11 +48,20 @@ public class AdvertisementManagementController {
             Response response = new Response<>(ad, "Advertisement added successfully", HttpStatus.CREATED);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (UserNotFoundException ex) {
-            Response response = new Response<>(null, "User not found: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            Response response = new Response<>(null, "User not found: " + ex.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (EntityExistsException ex) {
             Response response = new Response<>(null, "Advertisement already exists: " + ex.getMessage(), HttpStatus.CONFLICT);
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        } catch (EntityNotFoundException ex) {
+            Response<Advertisement> response = new Response<>(null, "Category not found: " + ex.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        } catch (ValidationException e) {
+            Response<Advertisement> response = new Response<>(null, "Invalid advertisement data: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            Response<Advertisement> response = new Response<>(null, "An error occurred during advertisement adding: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -121,7 +121,7 @@ public class AdvertisementImageManagementControllerTest {
         mockMvc.perform(post("/api/advertisement-images/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }
 
@@ -132,7 +132,7 @@ public class AdvertisementImageManagementControllerTest {
         mockMvc.perform(post("/api/advertisement-images/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test

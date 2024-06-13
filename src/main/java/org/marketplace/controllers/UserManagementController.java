@@ -3,6 +3,7 @@ package org.marketplace.controllers;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import org.marketplace.enums.ResourceType;
 import org.marketplace.models.User;
 import org.marketplace.requests.Response;
@@ -45,6 +46,12 @@ public class UserManagementController {
         } catch (EntityExistsException e) {
             Response<User> response = new Response<>(null, "User already exists with this data" + e.getMessage(), HttpStatus.CONFLICT);
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        } catch (ValidationException e) {
+            Response<User> response = new Response<>(null, "Invalid user data: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            Response<User> response = new Response<>(null, "An error occurred during user registration: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

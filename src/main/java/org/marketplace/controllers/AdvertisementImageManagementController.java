@@ -1,6 +1,7 @@
 package org.marketplace.controllers;
 
 import jakarta.persistence.EntityExistsException;
+import jakarta.validation.ValidationException;
 import org.marketplace.enums.ResourceType;
 import org.marketplace.models.AdvertisementImage;
 import org.marketplace.requests.AdvertisementNotFoundException;
@@ -42,11 +43,17 @@ public class AdvertisementImageManagementController {
             Response response = new Response<>(image, String.format("Advertisement image added successfully for advertisement ID: %d", advertisementImage.getAdvertisement().getId()), HttpStatus.CREATED);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (AdvertisementNotFoundException ex) {
-            Response response = new Response<>(null, "Advertisement not found: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            Response response = new Response<>(null, "Advertisement not found: " + ex.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (EntityExistsException ex) {
             Response response = new Response<>(null, "Advertisement image already exists: " + ex.getMessage(), HttpStatus.CONFLICT);
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        } catch (ValidationException e) {
+            Response<AdvertisementImage> response = new Response<>(null, "Invalid advertisement-image data: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            Response<AdvertisementImage> response = new Response<>(null, "An error occurred during advertisement-image adding: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.marketplace.enums.AdvertisementStatus;
 import org.marketplace.models.Advertisement;
 import org.marketplace.repositories.AdvertisementManagementRepository;
+import org.marketplace.repositories.CategoryManagementRepository;
 import org.marketplace.repositories.UserManagementRepository;
 import org.marketplace.requests.UserNotFoundException;
 import org.marketplace.specifications.AdvertisementSpecification;
@@ -20,23 +21,31 @@ import java.util.Optional;
 public class AdvertisementManagementService {
     private final AdvertisementManagementRepository advertisementManagementRepository;
     private final UserManagementRepository userManagementRepository;
+
+    private final CategoryManagementRepository categoryManagementRepository;
     @Autowired
     EmailService emailService;
 
 
-    public AdvertisementManagementService(AdvertisementManagementRepository advertisementManagementRepository, EmailService emailService, UserManagementRepository userManagementRepository) {
+    public AdvertisementManagementService(AdvertisementManagementRepository advertisementManagementRepository, EmailService emailService, UserManagementRepository userManagementRepository, CategoryManagementRepository categoryManagementRepository) {
         this.advertisementManagementRepository = advertisementManagementRepository;
         this.emailService = emailService;
         this.userManagementRepository = userManagementRepository;
+        this.categoryManagementRepository = categoryManagementRepository;
     }
 
     public Advertisement addAdvertisement(Advertisement advertisement) {
         Long advertisementId = advertisement.getId();
         if (advertisement.getUser() == null)
             throw new UserNotFoundException("User can not be null");
+        if (advertisement.getCategory() == null)
+            throw new UserNotFoundException("Category can not be null");
         Long userId = advertisement.getUser().getId();
+        Long categoryId = advertisement.getCategory().getId();
         if (!userManagementRepository.existsById(userId))
             throw new UserNotFoundException(String.format("User with id: %d not exists!", userId));
+        if (!categoryManagementRepository.existsById(categoryId))
+            throw new EntityNotFoundException(String.format("Category with id: %d not exists!", categoryId));
         if (advertisementId == null)
             return advertisementManagementRepository.save(advertisement);
         try {
