@@ -11,6 +11,8 @@ import org.marketplace.models.Advertisement;
 import org.marketplace.models.Category;
 import org.marketplace.models.User;
 import org.marketplace.repositories.AdvertisementManagementRepository;
+import org.marketplace.repositories.CategoryManagementRepository;
+import org.marketplace.repositories.UserManagementRepository;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +30,12 @@ public class AdvertisementManagementServiceTest {
 
     @Mock
     private AdvertisementManagementRepository advertisementManagementRepository;
+
+    @Mock
+    private UserManagementRepository userManagementRepository;
+
+    @Mock
+    private CategoryManagementRepository categoryManagementRepository;
 
     @Mock
     private EmailService emailService;
@@ -49,6 +57,8 @@ public class AdvertisementManagementServiceTest {
     @Test
     public void testAddAdvertisement() {
         // given
+        given(categoryManagementRepository.existsById(category.getId())).willReturn(true);
+        given(userManagementRepository.existsById(user.getId())).willReturn(true);
         given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.empty());
         given(advertisementManagementRepository.save(advertisement)).willReturn(advertisement);
 
@@ -64,6 +74,8 @@ public class AdvertisementManagementServiceTest {
     @Test
     public void testAddAdvertisementAlreadyExists() {
         // given
+        given(categoryManagementRepository.existsById(category.getId())).willReturn(true);
+        given(userManagementRepository.existsById(user.getId())).willReturn(true);
         given(advertisementManagementRepository.findById(advertisement.getId())).willReturn(Optional.of(advertisement));
 
         // when

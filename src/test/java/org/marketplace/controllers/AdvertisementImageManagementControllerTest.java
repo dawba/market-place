@@ -1,14 +1,10 @@
 package org.marketplace.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.marketplace.configuration.DataLoader;
-import org.marketplace.models.Category;
-import org.marketplace.requests.Response;
 import org.marketplace.services.ResourceAccessAuthorizationService;
 import org.marketplace.util.TestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
-import static junit.framework.TestCase.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,17 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "test")
 @Transactional
 public class AdvertisementImageManagementControllerTest {
+    @MockBean
+    ResourceAccessAuthorizationService resourceAccessAuthorizationService;
     @Autowired
     private MockMvc mockMvc;
     @MockBean
     private JavaMailSender javaMailSender;
     @MockBean
     private DataLoader dataLoader;
-    @MockBean
-    ResourceAccessAuthorizationService resourceAccessAuthorizationService;
     private Long advertisementId;
 
-    @Before
+
+    @BeforeEach
     public void setUp() throws Exception {
         String userPayload = "{\"login\":\"user2\", " +
                 "\"password\":\"password\", " +
@@ -64,7 +53,7 @@ public class AdvertisementImageManagementControllerTest {
         MvcResult mvcResultUser = mockMvc.perform(post("/api/user/register")
                         .contentType(APPLICATION_JSON)
                         .content(userPayload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
@@ -74,7 +63,7 @@ public class AdvertisementImageManagementControllerTest {
         MvcResult mvcResultCategory = mockMvc.perform(post("/api/categories/add")
                         .contentType(APPLICATION_JSON)
                         .content(categoryPayload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
@@ -101,11 +90,11 @@ public class AdvertisementImageManagementControllerTest {
         MvcResult mvcResultAddAd = mockMvc.perform(post("/api/advertisement/add")
                         .contentType(APPLICATION_JSON)
                         .content(advertisementPayload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
-         advertisementId = TestUtil.extractAdvertisementIdFromMvcResult(mvcResultAddAd);
+        advertisementId = TestUtil.extractAdvertisementIdFromMvcResult(mvcResultAddAd);
         assertNotNull(advertisementId, "Advertisement ID should not be null");
     }
 
@@ -116,12 +105,12 @@ public class AdvertisementImageManagementControllerTest {
     @Test
     public void createAdvertisementImage_positive() throws Exception {
 
-        String payload = "{\"id\":1,\"advertisement\":{\"id\":"+advertisementId+"},\"filepath\":\"filepath\"}";
+        String payload = "{\"id\":1,\"advertisement\":{\"id\":" + advertisementId + "},\"filepath\":\"filepath\"}";
 
         mockMvc.perform(post("/api/advertisement-images/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }
 
@@ -132,7 +121,7 @@ public class AdvertisementImageManagementControllerTest {
         mockMvc.perform(post("/api/advertisement-images/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }
 
@@ -143,21 +132,20 @@ public class AdvertisementImageManagementControllerTest {
         mockMvc.perform(post("/api/advertisement-images/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(APPLICATION_JSON));
+                .andExpect(status().isNotFound());
     }
 
     @Test
     public void updateAdvertisementImage() throws Exception {
-        String payload = "{\"id\":1,\"advertisement\":{\"id\":"+advertisementId+"},\"filepath\":\"filepath\"}";
+        String payload = "{\"id\":1,\"advertisement\":{\"id\":" + advertisementId + "},\"filepath\":\"filepath\"}";
 
         mockMvc.perform(post("/api/advertisement-images/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON));
 
-        String updatePayload = "{\"id\":1,\"advertisement\":{\"id\":"+advertisementId+"},\"filepath\":\"updatedFilepath\"}";
+        String updatePayload = "{\"id\":1,\"advertisement\":{\"id\":" + advertisementId + "},\"filepath\":\"updatedFilepath\"}";
 
         mockMvc.perform(put("/api/advertisement-images/update")
                         .contentType(APPLICATION_JSON)
@@ -168,15 +156,18 @@ public class AdvertisementImageManagementControllerTest {
 
     @Test
     public void deleteAdvertisementImage() throws Exception {
-        String payload = "{\"id\":1,\"advertisement\":{\"id\":"+advertisementId+"},\"filepath\":\"filepath\"}";
+        String payload = "{\"id\":1,\"advertisement\":{\"id\":" + advertisementId + "},\"filepath\":\"filepath\"}";
 
-        mockMvc.perform(post("/api/advertisement-images/add")
+        MvcResult mvcResult = mockMvc.perform(post("/api/advertisement-images/add")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON));
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andReturn();
 
-        mockMvc.perform(delete("/api/advertisement-images/1"))
+        Long advertisementImageId = TestUtil.extractAdvertisementImageIdFromMvcResult(mvcResult);
+
+        mockMvc.perform(delete("/api/advertisement-images/" + advertisementImageId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));
     }

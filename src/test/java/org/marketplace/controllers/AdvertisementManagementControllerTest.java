@@ -47,7 +47,7 @@ public class AdvertisementManagementControllerTest {
         MvcResult mvcResultUser = mockMvc.perform(post("/api/user/register")
                         .contentType(APPLICATION_JSON)
                         .content(userPayload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
@@ -57,7 +57,7 @@ public class AdvertisementManagementControllerTest {
         MvcResult mvcResultCategory = mockMvc.perform(post("/api/categories/add")
                         .contentType(APPLICATION_JSON)
                         .content(categoryPayload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
@@ -84,7 +84,7 @@ public class AdvertisementManagementControllerTest {
         MvcResult mvcResultAddAd = mockMvc.perform(post("/api/advertisement/add")
                         .contentType(APPLICATION_JSON)
                         .content(advertisementPayload))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andReturn();
 
