@@ -12,6 +12,8 @@ import org.marketplace.specifications.AdvertisementSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +23,7 @@ import java.util.Optional;
 public class AdvertisementManagementService {
     private final AdvertisementManagementRepository advertisementManagementRepository;
     private final UserManagementRepository userManagementRepository;
-
+    private final Logger LOGGER = LogManager.getLogger(AdvertisementManagementService.class);
     private final CategoryManagementRepository categoryManagementRepository;
     @Autowired
     EmailService emailService;
@@ -50,8 +52,10 @@ public class AdvertisementManagementService {
             return advertisementManagementRepository.save(advertisement);
         try {
             getAdvertisementById(advertisementId);
+            LOGGER.error("Ads " + advertisement.getTitle() + " already exists.");
             throw new EntityExistsException(String.format("Advertisement with id: %d already exists!", advertisementId));
         } catch (EntityNotFoundException e) {
+            LOGGER.info("Ads " + advertisement.getTitle() + " has been added.");
             return advertisementManagementRepository.save(advertisement);
         }
     }
